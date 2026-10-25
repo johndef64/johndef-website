@@ -3,1012 +3,214 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Percorso Low-FODMAP</title>
+<title>I miei siti</title>
 <meta name="robots" content="noindex">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
-<script src="../../shared/config.js"></script>
-<script src="../../shared/auth.js"></script>
-<script src="../../shared/store.js"></script>
-<script src="../../shared/userbar.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<link rel="stylesheet" href="shared/base.css">
 <style>
-/* Layout: tre schede (Percorso, Tabella, Pasti) sotto una barra fissa; colonna unica leggibile, schede-card su telefono */
-:root{
-  --bg:#f5f7f2; --surface:#ffffff; --sunk:#eef2ec; --fg:#1d2a22; --muted:#5b6b60; --line:#d9e1d8; --accent:#2f6b4f; --on-accent:#ffffff;
-  --low:#2e7d4f; --low-bg:#e2f2e7; --mid:#a86a00; --mid-bg:#fbefd6; --high:#b23a2e; --high-bg:#f8e1dd;
-  --reg:#1f5f8b; --reg-bg:#dfeef8;
-  --f-display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
-  --f-body:"Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif;
-  box-sizing:border-box;
-}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#121814; --surface:#1a221d; --sunk:#151c18; --fg:#e6ede7; --muted:#9db0a2; --line:#2c3a31; --accent:#7cc39c; --on-accent:#0f1712;
-  --low:#7fd3a0; --low-bg:#1d3527; --mid:#f0c060; --mid-bg:#3a2e14; --high:#f19285; --high-bg:#3d1f1b;
-  --reg:#8cc6ef; --reg-bg:#1a2c3a; color-scheme:dark}}
-:root[data-theme="dark"]{
-  --bg:#121814; --surface:#1a221d; --sunk:#151c18; --fg:#e6ede7; --muted:#9db0a2; --line:#2c3a31; --accent:#7cc39c; --on-accent:#0f1712;
-  --low:#7fd3a0; --low-bg:#1d3527; --mid:#f0c060; --mid-bg:#3a2e14; --high:#f19285; --high-bg:#3d1f1b;
-  --reg:#8cc6ef; --reg-bg:#1a2c3a; color-scheme:dark}
-*,*::before,*::after{box-sizing:inherit}
-[hidden]{display:none!important}
-body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.5}
-body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
-a{color:var(--accent)}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.gut{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-.inner{max-width:1040px;margin:0 auto}
-
-/* Barra schede */
-.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background:var(--surface);border-bottom:1px solid var(--line)}
-.nav .inner{display:flex;gap:4px 18px;align-items:center;flex-wrap:wrap;padding-block:8px}
-.brand{font-family:var(--f-display);font-weight:800;font-size:1.05rem;letter-spacing:-.01em;margin-right:auto}
-.tabs{display:flex;gap:4px;overflow-x:auto;max-width:100%}
-.tabs a{font-weight:700;font-size:.92rem;text-decoration:none;color:var(--muted);padding:8px 12px;border-radius:10px;white-space:nowrap}
-.tabs a[aria-current="page"]{background:var(--accent);color:var(--on-accent)}
-.tabs a:not([aria-current="page"]):hover{background:var(--sunk);color:var(--fg)}
-
-main .inner{display:grid;gap:22px;padding-block:28px 56px}
-h1{font-family:var(--f-display);font-weight:800;font-size:clamp(1.7rem,4vw,2.4rem);line-height:1.1;margin:0;text-wrap:balance;letter-spacing:-.01em}
-h2{font-family:var(--f-display);font-weight:600;font-size:1.25rem;margin:0;text-wrap:balance}
-h3{font-family:var(--f-display);font-weight:600;font-size:1.05rem;margin:0}
-.lede{color:var(--muted);max-width:68ch;margin:6px 0 0}
-.muted{color:var(--muted)}
-.small{font-size:.88rem}
-.eyebrow{font-size:.74rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:700}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:grid;gap:12px;min-width:0}
-.grid2{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
-.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
-.pill{display:inline-block;font-weight:700;font-size:.76rem;letter-spacing:.04em;text-transform:uppercase;padding:2px 9px;border-radius:999px;white-space:nowrap}
-.pill.B{color:var(--low);background:var(--low-bg)} .pill.M{color:var(--mid);background:var(--mid-bg)} .pill.A{color:var(--high);background:var(--high-bg)}
-.pill.R{color:var(--reg);background:var(--reg-bg);text-transform:none;letter-spacing:0}
-.pill.N{color:var(--muted);background:var(--sunk)}
-input,select,textarea,button{font:inherit;color:var(--fg)}
-input,select,textarea{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 10px;min-width:0;max-width:100%}
-textarea{width:100%;min-height:84px;resize:vertical;line-height:1.45}
-label.f{display:grid;gap:4px;font-size:.86rem;color:var(--muted);min-width:0}
-label.f input,label.f select{color:var(--fg);width:100%}
-.btn{border:1px solid var(--accent);background:var(--accent);color:var(--on-accent);border-radius:10px;padding:8px 14px;font-weight:700;cursor:pointer}
-.btn.ghost{background:transparent;color:var(--accent)}
-.btn.sm{padding:4px 10px;font-size:.85rem}
-.saved{font-size:.82rem;color:var(--low)}
-.notice{background:var(--mid-bg);color:var(--fg);border-radius:12px;padding:12px 14px;font-size:.93rem}
-.notice b{color:var(--mid)}
-.chips{display:flex;gap:6px;flex-wrap:wrap}
-.chips button{font-size:.9rem;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;cursor:pointer}
-.chips button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:700}
-ul.plain{margin:0;padding-left:18px;display:grid;gap:4px}
-
-/* Percorso */
-.start{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:end}
-.timeline{display:grid;gap:14px}
-.phase{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:grid;gap:12px;min-width:0}
-.phase.now{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
-.phase header{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;justify-content:space-between}
-.phase .wk{font-variant-numeric:tabular-nums;color:var(--muted);font-size:.88rem}
-.checks{list-style:none;margin:0;padding:0;display:grid;gap:6px}
-.checks label{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
-.checks input{margin-top:4px;width:18px;height:18px;accent-color:var(--accent);flex:none}
-.checks input:checked + span{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--line)}
-.prog{height:6px;background:var(--sunk);border-radius:99px;overflow:hidden}
-.prog i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
-@media (prefers-reduced-motion:reduce){.prog i{transition:none}}
-.tips{background:var(--sunk);border-radius:10px;padding:10px 14px;font-size:.92rem;color:var(--muted)}
-.tips b{color:var(--fg)}
-.sched{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
-.sched div{background:var(--sunk);border-radius:10px;padding:8px 10px;font-size:.88rem}
-.sched b{display:block;font-variant-numeric:tabular-nums}
-
-.calib{display:grid;gap:10px}
-.rule{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:start;padding:10px 0;border-top:1px solid var(--line)}
-.rule:first-child{border-top:0;padding-top:0}
-.rule .pill{margin-top:2px}
-
-.diary-form{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));align-items:end}
-.diary-form .wide{grid-column:1/-1}
-.stats{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}
-.stat{background:var(--sunk);border-radius:10px;padding:10px 12px}
-.stat b{display:block;font-family:var(--f-display);font-size:1.4rem;font-variant-numeric:tabular-nums;line-height:1.2}
-.stat span{font-size:.82rem;color:var(--muted)}
-.entries{display:grid;gap:0}
-.entry{display:grid;grid-template-columns:auto 1fr auto;gap:4px 12px;padding:10px 0;border-top:1px solid var(--line);align-items:start}
-.entry .d{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
-.entry .v{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:.92rem;font-variant-numeric:tabular-nums}
-.entry .n{grid-column:2/3;font-size:.88rem;color:var(--muted)}
-.suggest{border-left:3px solid var(--reg);padding:6px 12px;background:var(--reg-bg);border-radius:0 10px 10px 0;font-size:.93rem}
-
-.reintro{display:grid;gap:10px}
-.ri{display:grid;gap:8px;padding:12px 0;border-top:1px solid var(--line)}
-.ri:first-child{border-top:0;padding-top:0}
-.ri .doses{display:flex;flex-wrap:wrap;gap:6px}
-.ri .doses span{background:var(--sunk);border-radius:8px;padding:3px 8px;font-size:.86rem;font-variant-numeric:tabular-nums}
-.ri .ctl{display:grid;grid-template-columns:minmax(150px,200px) 1fr;gap:8px}
-@media (max-width:520px){.ri .ctl{grid-template-columns:1fr}}
-#copyBox{width:100%;min-height:160px;font-size:.85rem}
-
-/* Tabella FODMAP */
-.legend{display:flex;flex-wrap:wrap;gap:10px 18px}
-.legend div{display:flex;gap:8px;align-items:flex-start;max-width:34ch;font-size:.92rem;color:var(--muted)}
-.bar{position:sticky;top:calc(env(safe-area-inset-top,0px) + var(--navh,56px));z-index:5;background:var(--bg);padding-block:10px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;border-bottom:1px solid var(--line)}
-.bar input{flex:1 1 200px}
-.count{color:var(--muted);font-size:.88rem;font-variant-numeric:tabular-nums}
-table.ft{width:100%;border-collapse:collapse;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
-.ft th{text-align:left;font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:10px 12px;border-bottom:1px solid var(--line)}
-.ft td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
-.ft tr:last-child td{border-bottom:0}
-.ft td.name{font-weight:700}
-.ft td.name .tags{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
-.ft td.por{font-variant-numeric:tabular-nums}
-.ft td.note{color:var(--muted);font-size:.92rem}
-.ft td.note .pill.R{margin-right:6px}
-.ft .cat-row td{background:var(--bg);font-family:var(--f-display);font-weight:600;font-size:1rem;color:var(--accent)}
-@media (max-width:640px){
-  .ft thead{display:none}
-  .ft,.ft tbody,.ft tr,.ft td{display:block;width:auto}
-  .ft tr{padding:10px 12px;border-bottom:1px solid var(--line)}
-  .ft td{padding:2px 0;border:0}
-  .ft td.name{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
-  .ft td.lvl{display:none}
-  .ft td.por::before{content:"Porzione ok: ";color:var(--muted)}
-  .ft td.typ::before{content:"FODMAP: ";color:var(--muted)}
-  .ft td.note:empty{display:none}
-  .ft td.note .pill.R{display:none}
-  .ft .cat-row td{padding:4px 0}
-}
-@media (min-width:641px){.ft td.name .tags{display:none}}
-.notes{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
-.notes section{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;gap:8px}
-.notes ul{margin:0;color:var(--muted);font-size:.93rem;padding-left:18px;display:grid;gap:4px}
-.notes b{color:var(--fg)}
-.src{font-size:.82rem;color:var(--muted);margin:0}
-.empty{padding:20px;text-align:center;color:var(--muted)}
-
-/* Pasti e profilo */
-.pform{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
-.metrics{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
-.metric{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:grid;gap:2px;align-content:start}
-.metric .k{font-size:.78rem;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:700}
-.metric .v{font-family:var(--f-display);font-weight:800;font-size:1.55rem;font-variant-numeric:tabular-nums;line-height:1.15}
-.metric .v small{font-family:var(--f-body);font-weight:400;font-size:.85rem;color:var(--muted)}
-.metric .s{font-size:.85rem;color:var(--muted)}
-.scale{position:relative;height:8px;border-radius:99px;margin-top:6px;background:linear-gradient(90deg,var(--reg) 0 14%,var(--low) 14% 46%,var(--mid) 46% 66%,var(--high) 66% 100%);opacity:.85}
-.scale i{position:absolute;top:-4px;width:4px;height:16px;border-radius:2px;background:var(--fg);transform:translateX(-50%)}
-.macro{display:grid;gap:6px}
-.mbar{display:grid;grid-template-columns:90px 1fr 92px;gap:10px;align-items:center;font-size:.9rem}
-.mbar .t{height:10px;background:var(--sunk);border-radius:99px;overflow:hidden}
-.mbar .t i{display:block;height:100%;background:var(--accent);border-radius:99px}
-.mbar .t i.over{background:var(--mid)}
-.mbar span:last-child{text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
-.meals{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
-.meal{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:grid;gap:6px;align-content:start;min-width:0}
-.meal h3{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
-.meal h3 small{font-family:var(--f-body);font-weight:400;font-size:.82rem;color:var(--muted);font-variant-numeric:tabular-nums}
-.it{display:grid;grid-template-columns:1fr auto;gap:2px 10px;font-size:.93rem;padding:3px 0}
-.it .q{font-variant-numeric:tabular-nums;font-weight:700;text-align:right;white-space:nowrap}
-.it .lock{font-size:.74rem;color:var(--mid)}
-.meal .tip{font-size:.85rem;color:var(--muted);border-top:1px dashed var(--line);padding-top:6px}
-.swap{width:100%;border-collapse:collapse;font-size:.92rem}
-.swap td{padding:6px 8px;border-top:1px solid var(--line);vertical-align:top}
-.swap td:first-child{font-weight:700;white-space:nowrap}
-.tw{overflow-x:auto}
-footer.f{font-size:.82rem;color:var(--muted)}
-
-/* Barra utente e stato di salvataggio */
-.userbar{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center;font-size:.84rem;color:var(--muted);width:100%;order:3}
-.userbar a.home{font-weight:700;text-decoration:none}
-.userbar .who{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:220px}
-.linkbtn{background:none;border:0;padding:0;color:var(--accent);cursor:pointer;text-decoration:underline;font-size:.84rem}
-.sync{display:inline-flex;gap:6px;align-items:center}
-.sync::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--low)}
-.sync[data-s="salvataggio"]::before{background:var(--mid)}
-.sync[data-s="offline"]::before,.sync[data-s="errore"]::before{background:var(--high)}
-#boot{padding-block:40px;color:var(--muted)}
+/* Layout: colonna centrale; accesso a sinistra e presentazione a destra su desktop, impilati su telefono */
+main{padding-block:calc(40px + env(safe-area-inset-top,0px)) calc(56px + env(safe-area-inset-bottom,0px))}
+.auth{display:grid;gap:28px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));align-items:start}
+.intro{display:grid;gap:12px;align-content:start;padding-top:8px}
+.intro p{margin:0;max-width:52ch}
+.tabs{display:flex;gap:4px;background:var(--sunk);padding:4px;border-radius:12px}
+.tabs button{flex:1;border:0;background:transparent;border-radius:9px;padding:8px;font-weight:700;color:var(--muted);cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--surface);color:var(--fg);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+form{display:grid;gap:12px}
+.top{display:flex;flex-wrap:wrap;gap:10px 20px;align-items:end;justify-content:space-between}
+.sites{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+.site{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:grid;gap:8px;text-decoration:none;color:var(--fg);align-content:start;transition:border-color .15s,transform .15s}
+.site:hover{border-color:var(--accent);transform:translateY(-1px)}
+.site h2{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.site .tag{font-family:var(--f-body);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);font-weight:700}
+.site p{margin:0;color:var(--muted);font-size:.93rem}
+.site .go{font-weight:700;color:var(--accent);font-size:.92rem}
+.site.add{border-style:dashed;background:transparent}
+@media (prefers-reduced-motion:reduce){.site{transition:none}.site:hover{transform:none}}
+.acct{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.dash{display:grid;gap:26px}
+code{background:var(--sunk);padding:1px 6px;border-radius:6px;font-size:.88em}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="shared/config.js"></script>
+<script src="shared/sites.js"></script>
+<script src="shared/auth.js"></script>
 </head>
 <body>
+<main class="gut">
+<div class="inner">
 
-<nav class="nav gut" aria-label="Sezioni">
-  <div class="inner">
-    <span class="brand">Percorso Low‑FODMAP</span>
-    <div id="userbar"></div>
-    <div class="tabs">
-      <a href="#percorso" data-tab="percorso">Percorso di terapia</a>
-      <a href="#tabella" data-tab="tabella">Tabella FODMAP</a>
-      <a href="#pasti" data-tab="pasti">Pasti e profilo</a>
+  <!-- Configurazione mancante -->
+  <section id="vSetup" class="card" hidden>
+    <div class="eyebrow">Configurazione</div>
+    <h1>Manca il collegamento al database</h1>
+    <p class="muted" style="margin:0">Apri <code>shared/config.js</code> e inserisci l'URL del progetto Supabase e la chiave <b>anon</b>. Le istruzioni passo passo sono nel file <code>README.md</code> del repository.</p>
+  </section>
+
+  <!-- Accesso -->
+  <section id="vAuth" class="auth" hidden>
+    <div class="intro">
+      <div class="eyebrow" id="brandEyebrow"></div>
+      <h1>Strumenti personali, dati al sicuro</h1>
+      <p class="muted">Accedi una volta e ritrovi note, diari e profili su ogni dispositivo. Ogni persona vede soltanto i propri dati.</p>
     </div>
-  </div>
-</nav>
-
-<p id="boot" class="gut">Caricamento dei tuoi dati…</p>
-<main class="gut" hidden>
-<!-- ===================== PERCORSO ===================== -->
-<section id="v-percorso" class="inner" data-view="percorso">
-  <header>
-    <div class="eyebrow">Colon irritabile · disbiosi · rettocele</div>
-    <h1>Il percorso, settimana per settimana</h1>
-    <p class="lede">Una guida in quattro fasi da seguire insieme a gastroenterologo, dietista e fisioterapista del pavimento pelvico. Spunta i passi fatti, scrivi le tue note in ogni fase e registra i sintomi nel diario: i suggerimenti di calibrazione si aggiornano in base ai dati.</p>
-  </header>
-
-  <div class="card">
-    <div class="start">
-      <label class="f">Data di inizio dell'eliminazione
-        <input type="date" id="startDate">
-      </label>
-      <div id="weekNow" class="muted"></div>
+    <div class="card">
+      <div class="tabs" role="tablist">
+        <button type="button" role="tab" id="tIn" aria-selected="true" data-m="in">Accedi</button>
+        <button type="button" role="tab" id="tUp" aria-selected="false" data-m="up">Registrati</button>
+      </div>
+      <form id="fAuth" novalidate>
+        <label class="f">Email<input type="email" id="aEmail" autocomplete="email" required></label>
+        <label class="f" id="pwWrap">Password<input type="password" id="aPw" autocomplete="current-password" minlength="8" required></label>
+        <button class="btn" type="submit" id="aBtn">Accedi</button>
+        <div id="aMsg" class="msg" hidden></div>
+        <div class="row" style="justify-content:space-between">
+          <button type="button" class="linkbtn" id="aForgot">Password dimenticata?</button>
+          <button type="button" class="linkbtn" id="aBack" hidden>Torna all'accesso</button>
+        </div>
+      </form>
     </div>
-    <p class="small muted" style="margin:0">Note, spunte, diario e profilo vengono salvati nel tuo account e si aggiornano in tempo reale su tutti i tuoi dispositivi. Per portarli a una visita usa “Copia riepilogo per la visita” in fondo alla pagina.</p>
-  </div>
+  </section>
 
-  <div class="timeline" id="timeline"></div>
+  <!-- Nuova password dopo il link via email -->
+  <section id="vRecover" class="card" hidden style="max-width:460px;margin:0 auto">
+    <h2>Scegli una nuova password</h2>
+    <form id="fRecover">
+      <label class="f">Nuova password (almeno 8 caratteri)<input type="password" id="rPw" autocomplete="new-password" minlength="8" required></label>
+      <button class="btn" type="submit">Salva la password</button>
+      <div id="rMsg" class="msg" hidden></div>
+    </form>
+  </section>
 
-  <div class="card" id="reintroCard">
-    <div class="row" style="justify-content:space-between">
-      <h2>Reintroduzione: un gruppo alla volta</h2>
-      <span class="pill N">Fase 2</span>
-    </div>
-    <p class="muted small" style="margin:0">Per ogni gruppo: 3 giorni con dose crescente (giorno 1 → 2 → 3), restando a dieta base per il resto. Poi 2–3 giorni di pausa senza il cibo testato prima del gruppo successivo. Se i sintomi compaiono già al giorno 1 o 2, fermati e segna “non tollerato” o “tollerato in piccole dosi”.</p>
-    <div class="reintro" id="reintro"></div>
-  </div>
-
-  <div class="grid2">
-    <div class="card calib">
-      <h2>Calibrare il tiro</h2>
+  <!-- Elenco dei siti -->
+  <section id="vDash" class="dash" hidden>
+    <div class="top">
       <div>
-        <div class="rule"><span class="pill A">Feci dure</span><div><b>Bristol 1–2 o spinta forte.</b> Aumenta lo psyllium di ½ cucchiaino ogni 4–5 giorni, aggiungi 2 kiwi al giorno, porta l'acqua a 2 litri. Usa lo sgabello e non restare seduto oltre 5 minuti.</div></div>
-        <div class="rule"><span class="pill M">Feci molli</span><div><b>Bristol 6–7.</b> Mantieni lo psyllium (compatta), passa a riso bianco e verdure cotte e sbucciate, controlla etichette per polioli e fruttosio, riduci caffè e alcol.</div></div>
-        <div class="rule"><span class="pill M">Gonfiore</span><div><b>Sopra 6/10 per 3 giorni.</b> Cerca l'effetto accumulo: un solo alimento “moderato” per pasto, pasti a 3–4 ore di distanza, cavoli solo cotti e nella porzione indicata.</div></div>
-        <div class="rule"><span class="pill R">Svuotamento</span><div><b>Sensazione di evacuazione incompleta.</b> Più legata al rettocele che alla dieta: ripassa gli esercizi del biofeedback e la tecnica di spinta, valuta lo splinting insegnato dal fisioterapista.</div></div>
-        <div class="rule"><span class="pill N">Stallo</span><div><b>Nessun miglioramento dopo 4–6 settimane.</b> Non stringere ancora la dieta: passa alla reintroduzione e chiedi al gastroenterologo di breath test, triciclico a basso dosaggio o ipnoterapia intestinale.</div></div>
+        <div class="eyebrow" id="hello"></div>
+        <h1 id="brand"></h1>
+      </div>
+      <button type="button" class="btn ghost sm" id="outBtn">Esci</button>
+    </div>
+    <div class="sites" id="sites"></div>
+    <div class="acct">
+      <div class="card">
+        <h2>Copia di sicurezza</h2>
+        <p class="muted small" style="margin:0">Il piano gratuito di Supabase non fa backup automatici. Scarica ogni tanto un file con tutti i tuoi dati, di tutti i siti.</p>
+        <div class="row"><button type="button" class="btn" id="expBtn">Scarica i miei dati</button><span id="expMsg" class="small muted" aria-live="polite"></span></div>
+      </div>
+      <div class="card">
+        <h2>Account</h2>
+        <p class="muted small" style="margin:0" id="acctInfo"></p>
+        <div class="row"><button type="button" class="btn ghost sm" id="pwBtn">Cambia password</button></div>
+        <form id="fPw" hidden>
+          <label class="f">Nuova password<input type="password" id="nPw" autocomplete="new-password" minlength="8" required></label>
+          <div class="row"><button class="btn sm" type="submit">Salva</button><span id="pwMsg" class="small" aria-live="polite"></span></div>
+        </form>
       </div>
     </div>
-    <div class="card">
-      <h2>Segnali per cui chiamare subito il medico</h2>
-      <ul class="plain">
-        <li>Sangue nelle feci o feci nere</li>
-        <li>Calo di peso non voluto</li>
-        <li>Sintomi che svegliano di notte</li>
-        <li>Febbre, anemia o dolore che cambia carattere</li>
-        <li>Esordio o cambiamento netto dopo i 50 anni, o tumore del colon in famiglia</li>
-      </ul>
-      <p class="small muted" style="margin:0">Questa guida non sostituisce il medico. Dosi di farmaci come Buscopan, triciclici o rifaximina vanno sempre decise con lui.</p>
-    </div>
-  </div>
+  </section>
 
-  <div class="card">
-    <div class="row" style="justify-content:space-between">
-      <h2>Diario dei sintomi</h2>
-      <span class="small muted">Scala di Bristol: 1 = palline dure · 4 = salsiccia liscia e morbida · 7 = liquide</span>
-    </div>
-    <form class="diary-form" id="diaryForm">
-      <label class="f">Data<input type="date" id="dDate" required></label>
-      <label class="f">Bristol (1–7)<select id="dBristol">
-        <option value="1">1 · palline dure</option><option value="2">2 · grumosa dura</option><option value="3">3 · con crepe</option><option value="4" selected>4 · liscia, morbida</option><option value="5">5 · pezzi morbidi</option><option value="6">6 · pastosa</option><option value="7">7 · liquida</option><option value="0">nessuna evacuazione</option>
-      </select></label>
-      <label class="f">Gonfiore 0–10<input type="number" id="dGonf" min="0" max="10" value="3"></label>
-      <label class="f">Dolore 0–10<input type="number" id="dDol" min="0" max="10" value="2"></label>
-      <label class="f">Svuotamento completo<select id="dSvuot"><option value="1">Sì</option><option value="0">No</option></select></label>
-      <label class="f">Psyllium (g)<input type="number" id="dPsy" min="0" max="20" step="0.5" value="5"></label>
-      <label class="f wide">Note (cibi, stress, ciclo, farmaci)<input type="text" id="dNote" placeholder="es. pranzo fuori, 1 Buscopan alle 16"></label>
-      <div class="wide row"><button class="btn" type="submit">Aggiungi al diario</button><span id="dMsg" class="saved" aria-live="polite"></span></div>
-    </form>
-    <div class="stats" id="stats"></div>
-    <div id="suggest"></div>
-    <div class="entries" id="entries"></div>
-  </div>
-
-  <div class="card">
-    <h2>Copia riepilogo per la visita</h2>
-    <p class="small muted" style="margin:0">Copia in un solo testo profilo, note di ogni fase, risultati della reintroduzione e ultime 14 voci del diario, da incollare in un messaggio o in un documento per il medico.</p>
-    <div class="row"><button class="btn" id="copyAll" type="button">Copia riepilogo</button><span id="copyMsg" class="saved" aria-live="polite"></span></div>
-    <textarea id="copyBox" hidden readonly aria-label="Riepilogo da copiare"></textarea>
-  </div>
-</section>
-
-<!-- ===================== TABELLA ===================== -->
-<section id="v-tabella" class="inner" data-view="tabella" hidden>
-  <header>
-    <div class="eyebrow">Dati Monash, ritest aggiornati</div>
-    <h1>Verdure e alimenti vegetali: quanti FODMAP?</h1>
-    <p class="lede">Porzioni a basso contenuto di FODMAP per chi ha colon irritabile ad alvo alterno, disbiosi/SIBO e difficoltà di svuotamento da rettocele. Le voci marcate “regolarità” aiutano feci morbide e ben formate. I pasti tipo usano queste porzioni: <a href="#pasti">vai a Pasti e profilo</a>.</p>
-  </header>
-  <div class="legend" aria-label="Legenda">
-    <div><span class="pill B">Basso</span><span>Tollerato alla porzione indicata (o in quantità libera).</span></div>
-    <div><span class="pill M">Moderato</span><span>Basso solo nella piccola porzione indicata; oltre diventa ricco di FODMAP.</span></div>
-    <div><span class="pill A">Alto</span><span>Da evitare nella fase di eliminazione.</span></div>
-    <div><span class="pill R">regolarità</span><span>Fibra ben tollerata che aiuta la consistenza delle feci.</span></div>
-  </div>
-  <div class="bar">
-    <input id="q" type="search" placeholder="Cerca un alimento…" aria-label="Cerca un alimento">
-    <select id="cat" aria-label="Categoria"></select>
-    <div class="chips" role="group" aria-label="Filtro" id="lvlChips">
-      <button type="button" data-l="" aria-pressed="true">Tutti</button>
-      <button type="button" data-l="B" aria-pressed="false">Basso</button>
-      <button type="button" data-l="M" aria-pressed="false">Moderato</button>
-      <button type="button" data-l="A" aria-pressed="false">Alto</button>
-      <button type="button" data-l="R" aria-pressed="false">Regolarità</button>
-    </div>
-    <span class="count" id="count"></span>
-  </div>
-  <div>
-    <table class="ft">
-      <thead><tr><th>Alimento</th><th>Livello</th><th>Porzione a basso FODMAP</th><th>FODMAP prevalente</th><th>Note</th></tr></thead>
-      <tbody id="tb"></tbody>
-    </table>
-  </div>
-  <div class="notes">
-    <section>
-      <h2>Come usare la tabella</h2>
-      <ul>
-        <li><b>Effetto accumulo:</b> più porzioni “ok” dello stesso FODMAP nello stesso pasto si sommano (es. avena + banana matura = fruttani). Meglio un solo alimento moderato per pasto, a 3–4 ore di distanza.</li>
-        <li><b>Le porzioni contano più dell’alimento:</b> zucchina, avocado o mandorle sono ok in piccole dosi e problematici in grandi.</li>
-        <li><b>Sigle:</b> fruttani e GOS (oligosaccaridi), lattosio, fruttosio in eccesso, sorbitolo e mannitolo (polioli).</li>
-      </ul>
-    </section>
-    <section>
-      <h2>Cavoli e brassicacee</h2>
-      <ul>
-        <li>Non sono tutte uguali: cavolfiore e verza sono alti, cavolini e gambi di broccolo moderati; cappuccio, cime di broccolo, cavolo nero, pak choi, rucola e ravanello sono bassi a circa 75 g.</li>
-        <li>Possono gonfiare per i composti solforati e la fibra, non solo per i FODMAP: meglio cotti e nella porzione indicata.</li>
-      </ul>
-    </section>
-    <section>
-      <h2>Rettocele e svuotamento difficile</h2>
-      <ul>
-        <li><b>Obiettivo feci morbide e formate</b> (tipo 4 di Bristol): né dure, che richiedono spinta e ristagnano nel rettocele, né liquide.</li>
-        <li>Preferisci <b>fibra solubile</b>: psyllium, avena, kiwi, semi di lino e chia, carote e patate. Evita la crusca di frumento.</li>
-        <li>Con la fibra serve acqua: circa 1,5–2 litri al giorno, aumentando la fibra gradualmente.</li>
-      </ul>
-    </section>
-    <section>
-      <h2>Disbiosi: non restare a dieta stretta</h2>
-      <ul>
-        <li>L’eliminazione dura 2–6 settimane, poi si reintroducono i gruppi uno alla volta (<a href="#percorso">vedi il percorso</a>). Una dieta low‑FODMAP a vita impoverisce il microbiota.</li>
-        <li>Molti alimenti ricchi di FODMAP sono prebiotici utili: l’obiettivo è trovare la propria soglia.</li>
-      </ul>
-    </section>
-  </div>
-  <p class="src">Valori indicativi basati sui dati Monash University, inclusi i ritest recenti (mirtilli, pomodori, peperoni). Per il dato più recente consulta l’app Monash FODMAP Diet. Le porzioni si riferiscono all’alimento pronto da mangiare.</p>
-</section>
-
-<!-- ===================== PASTI ===================== -->
-<section id="v-pasti" class="inner" data-view="pasti" hidden>
-  <header>
-    <div class="eyebrow">Profilo nutrizionale · pasti tipo low‑FODMAP</div>
-    <h1>Il tuo fabbisogno e cosa mettere nel piatto</h1>
-    <p class="lede">Inserisci i tuoi dati: il calcolatore stima indice di massa corporea, metabolismo, calorie e nutrienti, e le grammature dei pasti si adattano al tuo obiettivo. Frutta, verdura e alimenti moderati restano fissi, perché il loro limite di FODMAP non cambia con le calorie. Le porzioni vengono dalla <a href="#tabella">Tabella FODMAP</a>.</p>
-  </header>
-
-  <div class="card">
-    <div class="row" style="justify-content:space-between">
-      <h2>Profilo</h2>
-      <span id="profMsg" class="saved" aria-live="polite"></span>
-    </div>
-    <div class="notice" id="exampleNote"><b>Valori di esempio.</b> Sostituiscili con i tuoi: vengono salvati appena li modifichi.</div>
-    <form class="pform" id="pform" onsubmit="return false">
-      <label class="f">Sesso<select id="pSex"><option value="F">Donna</option><option value="M">Uomo</option></select></label>
-      <label class="f">Età (anni)<input type="number" id="pAge" min="14" max="100" step="1"></label>
-      <label class="f">Altezza (cm)<input type="number" id="pH" min="120" max="220" step="0.5"></label>
-      <label class="f">Peso (kg)<input type="number" id="pW" min="30" max="250" step="0.1"></label>
-      <label class="f">Vita (cm)<input type="number" id="pWaist" min="40" max="200" step="0.5"></label>
-      <label class="f">Fianchi (cm)<input type="number" id="pHip" min="50" max="200" step="0.5"></label>
-      <label class="f">Collo (cm, facoltativo)<input type="number" id="pNeck" min="20" max="60" step="0.5"></label>
-      <label class="f">Attività<select id="pAct">
-        <option value="1.2">Sedentaria</option>
-        <option value="1.375">Leggera (1–3 volte/sett.)</option>
-        <option value="1.55">Moderata (3–5 volte/sett.)</option>
-        <option value="1.725">Intensa (6–7 volte/sett.)</option>
-        <option value="1.9">Molto intensa / lavoro fisico</option>
-      </select></label>
-      <label class="f">Obiettivo<select id="pGoal">
-        <option value="0">Mantenere il peso</option>
-        <option value="-0.15">Perdere peso gradualmente</option>
-        <option value="0.1">Recuperare peso</option>
-      </select></label>
-    </form>
-  </div>
-
-  <div class="metrics" id="metrics"></div>
-
-  <div class="grid2">
-    <div class="card">
-      <h2>Ripartizione giornaliera</h2>
-      <div class="macro" id="macroTarget"></div>
-      <p class="small muted" style="margin:0">Proteine in base al peso e all'attività, grassi intorno al 30% delle calorie, il resto da carboidrati. Fibre: arrivaci gradualmente, metà circa da psyllium, avena, kiwi e semi.</p>
-    </div>
-    <div class="card">
-      <h2>Come leggere i numeri</h2>
-      <ul class="plain small">
-        <li><b>IMC (BMI)</b> non distingue muscolo da grasso: usalo insieme a vita/altezza.</li>
-        <li><b>Vita/altezza</b> sotto 0,5 indica un rischio cardiometabolico basso a qualsiasi età.</li>
-        <li><b>Metabolismo basale</b> con formula di Mifflin‑St Jeor; <b>% di grasso</b> con formula US Navy se inserisci il collo, altrimenti stima da IMC (Deurenberg), meno precisa.</li>
-        <li>Per perdere peso non scendere sotto le calorie indicate come minimo: una dieta troppo bassa peggiora stitichezza e gonfiore.</li>
-      </ul>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="row" style="justify-content:space-between">
-      <h2>Pasti tipo</h2>
-      <div class="chips" id="dayChips" role="group" aria-label="Giorno"></div>
-    </div>
-    <p class="small muted" style="margin:0" id="scaleNote"></p>
-    <div class="meals" id="meals"></div>
-    <div class="macro" id="dayTotals"></div>
-  </div>
-
-  <div class="grid2">
-    <div class="card">
-      <h2>Sostituzioni equivalenti</h2>
-      <div class="tw"><table class="swap">
-        <tr><td>Carboidrati</td><td>80 g riso o pasta senza glutine (crudi) ≈ 80 g quinoa o miglio ≈ 350 g patate ≈ 100 g pane a lievitazione lunga ≈ 85 g farina di mais per polenta</td></tr>
-        <tr><td>Proteine</td><td>120 g pollo o tacchino ≈ 150 g pesce bianco ≈ 120 g salmone ≈ 2 uova + 30 g parmigiano ≈ 150 g tofu compatto ≈ 100 g tempeh</td></tr>
-        <tr><td>Latticini</td><td>Latte e yogurt <b>senza lattosio</b>; formaggi stagionati (parmigiano, grana, pecorino) sono naturalmente quasi privi di lattosio.</td></tr>
-        <tr><td>Insaporire</td><td>Olio aromatizzato all'aglio, parte verde di porro e cipollotto, erba cipollina, erbe fresche, zenzero, limone.</td></tr>
-      </table></div>
-    </div>
-    <div class="card">
-      <h2>Adattare i pasti ai sintomi</h2>
-      <ul class="plain small">
-        <li><b>Giorni di stitichezza:</b> avena a colazione, 2 kiwi, semi di lino o chia, riso integrale, patate con buccia, più acqua.</li>
-        <li><b>Giorni di diarrea:</b> riso bianco, patate senza buccia, verdure ben cotte, banana soda; evita cibi grassi e fritti, caffè e alcol.</li>
-        <li><b>Gonfiore:</b> porzioni più piccole e pasti regolari, mastica a lungo, niente bevande gassate, un solo alimento moderato per pasto.</li>
-        <li><b>Psyllium:</b> a colazione o a metà mattina in un bicchiere grande d'acqua, a 2 ore dai farmaci.</li>
-      </ul>
-    </div>
-  </div>
-  <footer class="f">Valori nutrizionali indicativi per 100 g di prodotto (tabelle CREA e USDA), arrotondati. Le stime di calorie e composizione corporea sono orientative e non sostituiscono la valutazione di un dietista.</footer>
-</section>
+</div>
 </main>
 
 <script>
-(async()=>{
-const __user=await AppStore.init("percorso-fodmap");
-UserBar.mount(document.getElementById("userbar"),__user);
-document.getElementById("boot").remove();
-document.querySelector("main").hidden=false;
+(function(){
+  const C=window.SITE_CONFIG,$=id=>document.getElementById(id);
+  const views=["vSetup","vAuth","vRecover","vDash"];
+  const show=v=>views.forEach(x=>$(x).hidden=x!==v);
+  document.getElementById("brandEyebrow").textContent=C.siteName;
+  if(!C.configured){show("vSetup");return;}
 
-/* ---------- Archivio ---------- */
-/* Dati nel database (AppStore); scheda e giorno aperti restano solo su questo dispositivo */
-const LOCAL_KEYS=["tab","day"];
-const store={
-  get(k,d){
-    if(LOCAL_KEYS.includes(k)){try{const v=localStorage.getItem("ibsfod:"+k);return v==null?d:JSON.parse(v);}catch(e){return d;}}
-    return AppStore.get(k,d);
-  },
-  set(k,v){
-    if(LOCAL_KEYS.includes(k)){try{localStorage.setItem("ibsfod:"+k,JSON.stringify(v));}catch(e){}return true;}
-    AppStore.set(k,v);return true;
+  const params=new URLSearchParams(location.search);
+  const next=Auth.safeNext(params.get("next"));
+  let mode="in",recovering=/type=recovery/.test(location.hash);
+
+  function msg(el,text,kind){el.hidden=!text;el.textContent=text||"";el.className="msg "+(kind||"");}
+  function setMode(m){
+    mode=m;
+    $("tIn").setAttribute("aria-selected",m==="in");$("tUp").setAttribute("aria-selected",m==="up");
+    document.querySelector(".tabs").hidden=m==="reset";
+    $("pwWrap").hidden=m==="reset";$("aPw").required=m!=="reset";
+    $("aPw").autocomplete=m==="up"?"new-password":"current-password";
+    $("aBtn").textContent=m==="in"?"Accedi":m==="up"?"Crea account":"Invia link per reimpostarla";
+    $("aForgot").hidden=m!=="in";$("aBack").hidden=m!=="reset";
+    msg($("aMsg"),"");
   }
-};
-const $=id=>document.getElementById(id);
-const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
-const fmt=(n,d=0)=>Number(n).toLocaleString("it-IT",{minimumFractionDigits:d,maximumFractionDigits:d});
-function flash(el,txt){el.textContent=txt;clearTimeout(el._t);el._t=setTimeout(()=>el.textContent="",1800);}
+  document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>setMode(b.dataset.m));
+  $("aForgot").onclick=()=>setMode("reset");
+  $("aBack").onclick=()=>setMode("in");
 
-/* ---------- Navigazione a schede ---------- */
-const VIEWS=["percorso","tabella","pasti"];
-function show(v){
-  if(!VIEWS.includes(v))v="percorso";
-  document.querySelectorAll("[data-view]").forEach(s=>s.hidden=s.dataset.view!==v);
-  document.querySelectorAll(".tabs a").forEach(a=>{if(a.dataset.tab===v)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current");});
-  store.set("tab",v);
-}
-function navH(){document.documentElement.style.setProperty("--navh",document.querySelector(".nav").offsetHeight+"px");}
-window.addEventListener("hashchange",()=>{show(location.hash.slice(1));window.scrollTo(0,0);});
-window.addEventListener("resize",navH);
+  $("fAuth").addEventListener("submit",async e=>{
+    e.preventDefault();
+    const email=$("aEmail").value.trim(),pw=$("aPw").value;
+    if(!/^\S+@\S+\.\S+$/.test(email))return msg($("aMsg"),"Inserisci un indirizzo email valido.","err");
+    if(mode!=="reset"&&pw.length<8)return msg($("aMsg"),"La password deve avere almeno 8 caratteri.","err");
+    $("aBtn").disabled=true;
+    try{
+      if(mode==="in"){
+        const {error}=await Auth.signIn(email,pw);if(error)throw error;
+        if(next){location.href=next;return;}
+        await enter();
+      }else if(mode==="up"){
+        const {data,error}=await Auth.signUp(email,pw);if(error)throw error;
+        if(data.session){await enter();}
+        else msg($("aMsg"),"Account creato. Ti abbiamo mandato un'email: apri il link per confermare l'indirizzo, poi accedi.","ok");
+      }else{
+        const {error}=await Auth.resetPassword(email);if(error)throw error;
+        msg($("aMsg"),"Se l'indirizzo è registrato, riceverai un'email con il link per scegliere una nuova password.","ok");
+      }
+    }catch(err){msg($("aMsg"),Auth.italianError(err),"err");}
+    finally{$("aBtn").disabled=false;}
+  });
 
-/* =========================================================
-   PERCORSO
-   ========================================================= */
-const PHASES=[
- {id:"p0",name:"Prima di iniziare",from:-1,to:0,label:"Settimana 0",
-  intro:"Escludere altre cause e misurare il punto di partenza: senza questo è impossibile capire se la terapia funziona.",
-  items:["Visita dal gastroenterologo con esami: anticorpi per celiachia, calprotectina fecale, emocromo","Prenotare valutazione del pavimento pelvico (manometria anorettale, defecografia se indicata)","Scaricare l'app Monash FODMAP Diet","Compilare il diario dei sintomi per 7 giorni mangiando come al solito","Comprare psyllium puro, sgabello per il bagno, latticini senza lattosio"],
-  tips:"<b>Buscopan</b> solo al bisogno nei giorni di crampi: è un anticolinergico e può rallentare l'intestino. Concorda dose e alternative (es. olio di menta piperita gastroprotetto) con il medico."},
- {id:"p1",name:"Eliminazione",from:1,to:6,label:"Settimane 1–6",
-  intro:"Dieta a basso FODMAP stretta, fibra solubile introdotta piano e riabilitazione del pavimento pelvico in parallelo.",
-  items:["Seguire le porzioni della Tabella FODMAP e i pasti tipo","Introdurre lo psyllium secondo lo schema qui sotto","Bere 1,5–2 litri al giorno","Iniziare il biofeedback (5–8 sedute ogni 1–2 settimane) ed esercizi a casa ogni giorno","In bagno: sgabello, nessuna spinta forzata, non oltre 5 minuti seduti","Valutare a fine settimana 4–6: se i sintomi non migliorano almeno del 30–50%, passare comunque alla fase 2"],
-  sched:true,
-  tips:"Se dopo 4–6 settimane la dieta non ha dato un beneficio chiaro, <b>non stringere di più</b>: interrompila e parlane con il gastroenterologo."},
- {id:"p2",name:"Reintroduzione",from:7,to:14,label:"Settimane 7–14",
-  intro:"Si testano i gruppi di FODMAP uno alla volta per capire quali e quanti ne tolleri. La base resta low‑FODMAP fino alla fine dei test.",
-  items:["Testare un gruppo ogni 5–6 giorni (3 di test, 2–3 di pausa)","Annotare i risultati nella scheda Reintroduzione","Continuare psyllium ed esercizi del pavimento pelvico","Controllo con dietista o gastroenterologo a metà fase"],
-  tips:"Un risultato positivo non vale per sempre: un gruppo non tollerato si può ritestare dopo 2–3 mesi, spesso con esito migliore."},
- {id:"p3",name:"Personalizzazione e mantenimento",from:15,to:99,label:"Dalla settimana 15",
-  intro:"Dieta il più varia possibile: si limitano solo i gruppi davvero non tollerati, nella quantità che dà fastidio.",
-  items:["Rimettere in dieta tutti i gruppi tollerati, anche come prebiotici per il microbiota","Mantenere lo psyllium alla dose minima efficace","Continuare gli esercizi del pavimento pelvico 3–4 volte a settimana","Rivalutare con il gastroenterologo terapie per il dolore residuo (triciclico a basso dosaggio, ipnoterapia)","Se lo svuotamento resta difficile dopo 3–6 mesi di terapia ben fatta, valutazione chirurgica del rettocele"],
-  tips:"Le ricadute capitano (stress, viaggi, infezioni): torna per 1–2 settimane alla base low‑FODMAP e poi riallarga."}
-];
-const PSY=[["Sett. 1","½ cucchiaino","≈ 2,5 g/die"],["Sett. 2","1 cucchiaino","≈ 5 g/die"],["Sett. 3","1½ cucchiaini","≈ 7,5 g/die"],["Sett. 4+","2 cucchiaini","≈ 10 g/die, se tollerato"]];
-const RI=[
- {id:"lat",g:"Lattosio",f:"Latte vaccino intero",d:["60 ml","125 ml","250 ml"]},
- {id:"fwh",g:"Fruttani · grano",f:"Pane bianco comune",d:["½ fetta","1 fetta","2 fette"]},
- {id:"fga",g:"Fruttani · aglio",f:"Aglio cotto",d:["¼ spicchio","½ spicchio","1 spicchio"]},
- {id:"fon",g:"Fruttani · cipolla",f:"Cipolla cotta",d:["10 g","20 g","40 g"]},
- {id:"gos",g:"GOS",f:"Lenticchie lessate da secche",d:["45 g","90 g","150 g"]},
- {id:"fru",g:"Fruttosio in eccesso",f:"Miele",d:["1 cucchiaino","2 cucchiaini","1 cucchiaio"]},
- {id:"sor",g:"Sorbitolo",f:"Avocado",d:["¼ di frutto","½ frutto","1 frutto"]},
- {id:"man",g:"Mannitolo",f:"Funghi champignon",d:["30 g","60 g","120 g"]}
-];
-const RES=[["","Non ancora testato"],["ok","Tollerato"],["poco","Tollerato in piccole dosi"],["no","Non tollerato"]];
+  $("fRecover").addEventListener("submit",async e=>{
+    e.preventDefault();
+    const pw=$("rPw").value;if(pw.length<8)return msg($("rMsg"),"Usa almeno 8 caratteri.","err");
+    const {error}=await Auth.updatePassword(pw);
+    if(error)return msg($("rMsg"),Auth.italianError(error),"err");
+    recovering=false;history.replaceState(null,"",location.pathname);await enter();
+  });
 
-let checks=store.get("checks",{}),notes=store.get("notes",{}),reintro=store.get("reintro",{}),diary=store.get("diary",[]);
-
-function currentWeek(){
-  const s=$("startDate").value;if(!s)return null;
-  const d0=new Date(s+"T00:00:00"),now=new Date();now.setHours(0,0,0,0);
-  const days=Math.round((now-d0)/864e5);
-  return days<0?0:Math.floor(days/7)+1;
-}
-function phaseOf(w){if(w==null)return null;return PHASES.find(p=>w>=p.from&&w<=p.to)||PHASES[0];}
-
-function renderTimeline(){
-  const w=currentWeek(),cur=phaseOf(w);
-  $("weekNow").innerHTML=w==null?"Imposta la data per vedere a che punto sei.":(w===0?"L'eliminazione non è ancora iniziata: sei in <b>preparazione</b>.":`Sei alla <b>settimana ${w}</b> · fase “${cur.name}”.`);
-  $("timeline").innerHTML=PHASES.map((p,pi)=>{
-    const done=p.items.filter((_,i)=>checks[p.id+":"+i]).length,pct=Math.round(done/p.items.length*100);
-    const now=cur&&cur.id===p.id;
-    return `<article class="phase${now?" now":""}" id="ph-${p.id}">
-      <header><h2>${pi}. ${p.name}</h2><span class="wk">${p.label}${now?' · <span class="pill B">in corso</span>':""}</span></header>
-      <p class="muted" style="margin:0">${p.intro}</p>
-      <div class="row small muted"><div class="prog" style="flex:1;min-width:120px"><i style="width:${pct}%"></i></div><span>${done}/${p.items.length} fatti</span></div>
-      <ul class="checks">${p.items.map((t,i)=>`<li><label><input type="checkbox" id="ck-${p.id}-${i}" data-k="${p.id}:${i}"${checks[p.id+":"+i]?" checked":""}><span>${t}</span></label></li>`).join("")}</ul>
-      ${p.sched?`<div><div class="eyebrow" style="margin-bottom:6px">Schema psyllium</div><div class="sched">${PSY.map(s=>`<div><span class="muted">${s[0]}</span><b>${s[1]}</b><span class="muted">${s[2]}</span></div>`).join("")}</div></div>`:""}
-      <div class="tips">${p.tips}</div>
-      <label class="f">Le tue note per questa fase
-        <textarea id="note-${p.id}" data-n="${p.id}" placeholder="Cosa funziona, cosa no, dosi provate, domande per la prossima visita…">${esc(notes[p.id]||"")}</textarea>
-      </label><span class="saved" id="ns-${p.id}" aria-live="polite"></span>
-    </article>`;}).join("");
-}
-$("timeline").addEventListener("change",e=>{
-  const k=e.target.dataset.k;if(!k)return;
-  checks[k]=e.target.checked;store.set("checks",checks);
-  const scroll=window.scrollY;renderTimeline();window.scrollTo(0,scroll);
-});
-$("timeline").addEventListener("input",e=>{
-  const n=e.target.dataset.n;if(!n)return;
-  notes[n]=e.target.value;
-  clearTimeout(e.target._t);e.target._t=setTimeout(()=>{store.set("notes",notes);flash($("ns-"+n),"Nota salvata");},500);
-});
-$("startDate").value=store.get("start","");
-$("startDate").addEventListener("change",()=>{store.set("start",$("startDate").value);renderTimeline();});
-
-function renderReintro(){
-  $("reintro").innerHTML=RI.map(r=>{const v=reintro[r.id]||{};return `<div class="ri">
-    <div class="row" style="justify-content:space-between"><h3>${r.g}</h3><span class="small muted">${r.f}</span></div>
-    <div class="doses"><span>G1 · ${r.d[0]}</span><span>G2 · ${r.d[1]}</span><span>G3 · ${r.d[2]}</span></div>
-    <div class="ctl">
-      <select id="ri-${r.id}" data-r="${r.id}" aria-label="Esito ${r.g}">${RES.map(o=>`<option value="${o[0]}"${(v.res||"")===o[0]?" selected":""}>${o[1]}</option>`).join("")}</select>
-      <input type="text" id="rin-${r.id}" data-rn="${r.id}" value="${esc(v.note||"")}" placeholder="Sintomi, dose limite, data del test">
-    </div></div>`;}).join("");
-}
-$("reintro").addEventListener("input",e=>{
-  const id=e.target.dataset.r||e.target.dataset.rn;if(!id)return;
-  reintro[id]=reintro[id]||{};
-  if(e.target.dataset.r)reintro[id].res=e.target.value;else reintro[id].note=e.target.value;
-  store.set("reintro",reintro);
-});
-
-/* Diario */
-const today=()=>{const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10);};
-$("dDate").value=today();
-const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
-$("diaryForm").addEventListener("submit",e=>{
-  e.preventDefault();
-  diary.push({id:Date.now(),d:$("dDate").value,b:+$("dBristol").value,g:clamp(+$("dGonf").value||0,0,10),p:clamp(+$("dDol").value||0,0,10),c:+$("dSvuot").value,ps:+$("dPsy").value||0,n:$("dNote").value.trim()});
-  diary.sort((a,b)=>b.d.localeCompare(a.d)||b.id-a.id);
-  store.set("diary",diary);$("dNote").value="";
-  flash($("dMsg"),"Aggiunto");renderDiary();
-});
-const BR=["nessuna","1","2","3","4","5","6","7"];
-function renderDiary(){
-  const last=diary.slice(0,7),withB=last.filter(x=>x.b>0);
-  const avg=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:null;
-  const aB=avg(withB.map(x=>x.b)),aG=avg(last.map(x=>x.g)),aP=avg(last.map(x=>x.p));
-  const ok=withB.length?Math.round(withB.filter(x=>x.b>=3&&x.b<=5).length/withB.length*100):null;
-  const comp=last.length?Math.round(last.filter(x=>x.c).length/last.length*100):null;
-  const dash="–";
-  $("stats").innerHTML=diary.length?`
-    <div class="stat"><b>${aB==null?dash:fmt(aB,1)}</b><span>Bristol medio · obiettivo 3–5</span></div>
-    <div class="stat"><b>${ok==null?dash:ok+"%"}</b><span>Evacuazioni nella norma</span></div>
-    <div class="stat"><b>${aG==null?dash:fmt(aG,1)}</b><span>Gonfiore medio /10</span></div>
-    <div class="stat"><b>${aP==null?dash:fmt(aP,1)}</b><span>Dolore medio /10</span></div>
-    <div class="stat"><b>${comp==null?dash:comp+"%"}</b><span>Svuotamento completo</span></div>`:"";
-  const s=[];
-  if(last.length>=3){
-    if(aB!=null&&aB<=2.5)s.push("Le feci tendono a essere dure: aumenta lo psyllium di ½ cucchiaino, aggiungi 2 kiwi al giorno e più acqua.");
-    if(aB!=null&&aB>=5.5)s.push("Le feci tendono a essere molli: mantieni lo psyllium, preferisci riso bianco e verdure cotte, controlla polioli e fruttosio nelle etichette.");
-    if(aG!=null&&aG>=6)s.push("Il gonfiore è alto: cerca l'effetto accumulo nei pasti e limita a un alimento moderato per pasto.");
-    if(comp!=null&&comp<50)s.push("Lo svuotamento è spesso incompleto: insisti con gli esercizi del biofeedback e parlane con il fisioterapista.");
-    if(!s.length)s.push("Gli ultimi giorni sono nella norma: mantieni dosi e abitudini attuali.");
+  async function enter(){
+    const u=await Auth.currentUser();
+    if(!u){show("vAuth");return;}
+    if(recovering){show("vRecover");return;}
+    if(next){location.href=next;return;}
+    $("brand").textContent=C.siteName;
+    $("hello").textContent="Ciao, "+u.email;
+    $("acctInfo").textContent="Accesso con "+u.email+". I tuoi dati sono visibili solo a te.";
+    $("sites").innerHTML=window.SITES.map(s=>`<a class="site" href="${C.root+s.path}">
+        <h2>${s.title}<span class="tag">${s.tag||""}</span></h2><p>${s.desc}</p><span class="go">Apri →</span></a>`).join("")+
+      `<div class="site add"><h2>Prossimo sito</h2><p>Copia la cartella <code>siti/modello</code> e aggiungila in <code>shared/sites.js</code>: comparirà qui con login e salvataggio già pronti.</p></div>`;
+    show("vDash");
   }
-  $("suggest").innerHTML=s.length?`<div class="suggest"><b>In base agli ultimi ${last.length} giorni:</b> ${s.join(" ")}</div>`:(diary.length?`<p class="small muted" style="margin:0">Servono almeno 3 voci per i suggerimenti.</p>`:"");
-  $("entries").innerHTML=diary.length?diary.slice(0,30).map(x=>`<div class="entry">
-     <span class="d">${new Date(x.d+"T00:00:00").toLocaleDateString("it-IT",{day:"2-digit",month:"short"})}</span>
-     <span class="v"><span>Bristol <b>${BR[x.b]}</b></span><span>Gonfiore <b>${x.g}</b></span><span>Dolore <b>${x.p}</b></span><span>${x.c?"Svuot. completo":"<b>Svuot. incompleto</b>"}</span><span>Psyllium ${fmt(x.ps,1)} g</span></span>
-     <button class="btn ghost sm" type="button" data-del="${x.id}">Elimina</button>
-     ${x.n?`<span class="n">${esc(x.n)}</span>`:""}
-   </div>`).join(""):`<p class="muted small" style="margin:0">Il diario è vuoto. Aggiungi la prima giornata con il modulo qui sopra: bastano 30 secondi a sera.</p>`;
-}
-$("entries").addEventListener("click",e=>{
-  const b=e.target.closest("[data-del]");if(!b)return;
-  if(b.dataset.armed){diary=diary.filter(x=>String(x.id)!==b.dataset.del);store.set("diary",diary);renderDiary();return;}
-  b.dataset.armed="1";b.textContent="Conferma";setTimeout(()=>{if(b.isConnected){delete b.dataset.armed;b.textContent="Elimina";}},3000);
-});
 
-/* =========================================================
-   TABELLA FODMAP
-   ========================================================= */
-const D = {
- "Verdure e ortaggi":[
-  ["Carota","B","Libera","—","Tra le verdure più sicure, cruda o cotta.",true],
-  ["Patata","B","Libera","—","Con buccia dà più fibra; senza buccia nelle fasi di diarrea.",true],
-  ["Lattuga (iceberg, romana, cappuccina)","B","Libera","—",""],
-  ["Rucola","B","≈ 30 g (1 tazza)","—",""],
-  ["Indivia, scarola","B","75 g","—",""],
-  ["Radicchio","B","75 g","—",""],
-  ["Spinaci novelli","B","75 g (crudi)","Fruttani oltre","Cotti si riducono di volume: pesali crudi.",true],
-  ["Cetriolo","B","75 g","—","Senza buccia e semi è più digeribile."],
-  ["Pomodoro comune","M","65 g (½ pomodoro medio)","Fruttosio","Monash lo ha riclassificato: serve controllo della porzione."],
-  ["Pomodorini ciliegini","M","3 pomodorini (≈ 45 g)","Fruttosio","Porzione ridotta dopo il ritest Monash."],
-  ["Pomodoro pelato in scatola","B","≈ 90 g (½ tazza)","Fruttosio oltre","Concentrato: 2 cucchiai."],
-  ["Peperone rosso","M","43 g","Fruttosio","Ritest Monash: porzione ridotta. Giallo 35 g, arancione 38 g. Arrostito e spellato è più tollerato."],
-  ["Peperone verde","B","75 g (fino a ≈ 1 peperone)","Sorbitolo oltre","Il più tollerato tra i peperoni."],
-  ["Melanzana","B","75 g","Sorbitolo oltre",""],
-  ["Zucchina","M","65 g","Fruttani","Oltre 100 g diventa moderata‑alta."],
-  ["Bietola / coste","B","75 g","Mannitolo oltre","",true],
-  ["Cavolo nero, kale","B","75 g","—","",true],
-  ["Cavolo cappuccio (verde e rosso)","B","75 g","Sorbitolo oltre","Crauti di cappuccio: moderati. Il cavolo verza è più ricco di FODMAP."],
-  ["Cavolo cinese, pak choi","B","75 g","Sorbitolo oltre",""],
-  ["Broccoli (cime)","B","75 g","Fruttosio oltre","",true],
-  ["Broccoli (gambi)","M","45 g","Fruttosio","Più FODMAP delle cime."],
-  ["Cavolini di Bruxelles","M","38 g (≈ 2)","Fruttani",""],
-  ["Cavolfiore","A","< 15 g","Mannitolo","Evitare in eliminazione."],
-  ["Fagiolini","B","75 g (≈ 15)","Sorbitolo oltre","",true],
-  ["Zucca delica / kabocha","B","75 g","Mannitolo oltre","",true],
-  ["Zucca butternut","M","45 g","Mannitolo, GOS",""],
-  ["Patata dolce (batata)","M","75 g","Mannitolo","Oltre 100 g alta."],
-  ["Pastinaca","B","75 g","—","",true],
-  ["Rapa","B","75 g","—",""],
-  ["Ravanello","B","75 g","—",""],
-  ["Germogli di soia","B","75 g","—",""],
-  ["Olive","B","15 olive piccole","—",""],
-  ["Okra","B","75 g","Fruttani oltre",""],
-  ["Barbabietola fresca","M","Prudenza: 20 g (2 fettine)","GOS, fruttani","Dati recenti indicano tolleranza fino a 75 g: verificare nell’app. Sottaceto: 2 fettine."],
-  ["Finocchio (bulbo)","M","48 g","Fruttani","Le foglie (barba) sono basse."],
-  ["Sedano","M","10 g (¼ di costa)","Mannitolo","Le foglie di sedano sono basse fino a 75 g."],
-  ["Mais dolce","M","38 g (½ pannocchia)","Sorbitolo","In scatola: 75 g ok."],
-  ["Avocado","M","30 g (prudente), fino a 60 g","Sorbitolo","Ritest Monash ha alzato la soglia a 60 g; in eliminazione meglio 30 g."],
-  ["Piselli","M","15 g","GOS, fruttani",""],
-  ["Carciofo","A","—","Fruttani","Cuori sott'olio in vasetto: moderati, max 30 g."],
-  ["Asparagi","A","1 punta (≈ 12 g)","Fruttosio, fruttani",""],
-  ["Cipolla (tutte le varietà)","A","—","Fruttani","Anche in polvere. Sostituire con parte verde di porro o cipollotto."],
-  ["Scalogno","A","—","Fruttani",""],
-  ["Aglio","A","—","Fruttani","Olio aromatizzato all’aglio (spicchio rimosso) è basso."],
-  ["Porro: parte bianca","A","—","Fruttani",""],
-  ["Porro: parte verde","B","75 g","—","Ottimo sostituto della cipolla."],
-  ["Cipollotto: parte verde","B","Libera","—",""],
-  ["Cipollotto: parte bianca","A","—","Fruttani",""],
-  ["Topinambur","A","—","Fruttani","Molto ricco di inulina."],
-  ["Taccole / piselli mangiatutto","A","—","Fruttani, mannitolo",""],
-  ["Radice di cicoria","A","—","Fruttani (inulina)","Attenzione a “fibra di cicoria” nelle etichette."],
- ],
- "Funghi e alghe":[
-  ["Funghi champignon freschi","A","—","Mannitolo","Anche portobello."],
-  ["Funghi champignon in scatola","B","75 g","—","Sciacquati."],
-  ["Funghi pleurotus (orecchioni)","B","75 g","—","Il fungo più sicuro."],
-  ["Funghi shiitake freschi","M","15 g","Mannitolo","Secchi: 2 funghi."],
-  ["Alga nori","B","2 fogli","—",""],
- ],
- "Erbe e spezie":[
-  ["Basilico, prezzemolo, coriandolo","B","Libera","—",""],
-  ["Menta, rosmarino, timo, origano, salvia","B","Libera","—",""],
-  ["Erba cipollina","B","Libera","—","Dà sapore di cipolla senza fruttani."],
-  ["Zenzero fresco","B","1 cucchiaino","—",""],
-  ["Curcuma, cumino, paprika, pepe","B","1 cucchiaino","—","Evitare miscele con aglio o cipolla."],
-  ["Peperoncino fresco","M","28 g","Fruttosio","Può irritare nelle fasi di diarrea."],
- ],
- "Legumi e derivati":[
-  ["Fagioli secchi lessati (borlotti, cannellini, rossi, neri)","A","—","GOS","In scatola e ben sciacquati alcune varietà hanno piccole porzioni tollerate: verificare nell’app."],
-  ["Fave","A","—","GOS, fruttani",""],
-  ["Ceci in scatola, sciacquati","M","42 g (¼ tazza)","GOS","Lessati da secchi: più alti."],
-  ["Lenticchie in scatola, sciacquate","M","46 g","GOS","Lessate da secche: 23 g."],
-  ["Edamame","B","90 g (1 tazza)","GOS oltre",""],
-  ["Tofu compatto","B","160 g","—","I GOS si perdono col siero."],
-  ["Tofu morbido / setoso","A","—","GOS, fruttani",""],
-  ["Tempeh","B","100 g","—","Fermentato, ben tollerato."],
-  ["Bevanda di soia da proteine isolate","B","250 ml","—",""],
-  ["Bevanda di soia da fagioli interi","A","—","GOS",""],
- ],
- "Cereali e amidi":[
-  ["Riso (bianco, integrale, basmati)","B","Libera","—","Integrale per la regolarità, bianco nelle fasi di diarrea."],
-  ["Quinoa","B","155 g cotta","—","",true],
-  ["Miglio, grano saraceno","B","1 tazza cotta","—","Il saraceno in farina è basso."],
-  ["Mais, polenta","B","Libera","—",""],
-  ["Fiocchi d’avena","B","52 g (½ tazza crudi)","Fruttani, GOS oltre","Fibra solubile (beta‑glucani): ottimi per la consistenza delle feci.",true],
-  ["Pasta senza glutine","B","1 tazza cotta","—",""],
-  ["Pasta di frumento","M","74 g cotta (½ tazza)","Fruttani",""],
-  ["Pane di frumento con lievito madre","B","2 fette","—","Solo lievitazione lunga: il processo riduce i fruttani."],
-  ["Pane di farro con lievito madre","B","2 fette","—",""],
-  ["Pane bianco comune di frumento","M","1 fetta (≈ 35 g)","Fruttani","Con 2 fette diventa alto."],
-  ["Pane di segale","A","—","Fruttani",""],
-  ["Orzo, segale (chicchi)","A","—","Fruttani, GOS",""],
-  ["Cuscus di frumento","M","≈ 40 g cotto","Fruttani",""],
-  ["Crusca di frumento","A","—","Fruttani","Oltre ai fruttani, fibra insolubile ruvida: poco adatta in caso di rettocele."],
- ],
- "Frutta":[
-  ["Banana poco matura (soda)","B","1 media","—",""],
-  ["Banana matura","M","35 g (⅓)","Fruttani","Con le macchie diventa alta."],
-  ["Fragole","B","65 g (≈ 5)","Fruttosio oltre",""],
-  ["Lamponi","B","60 g","Fruttosio oltre","",true],
-  ["Mirtilli","B","125 g (1 tazza)","—","Ritest Monash 2022: soglia molto più alta di quella vecchia (40 g)."],
-  ["Kiwi","B","150 g (2 piccoli)","Fruttani oltre","2 kiwi al giorno hanno prove di efficacia nella stitichezza.",true],
-  ["Arancia","B","130 g (1 media)","Fruttani oltre","Il succo concentra i FODMAP: max 125 ml."],
-  ["Mandarino, clementina","B","1–2 frutti","—",""],
-  ["Limone, lime","B","Libera (succo)","—",""],
-  ["Uva","B","150 g","Fruttosio oltre",""],
-  ["Ananas","B","140 g","Fruttani oltre",""],
-  ["Papaya","B","140 g","—","",true],
-  ["Melone cantalupo","B","120 g","Fruttani oltre",""],
-  ["Melone bianco (honeydew)","M","90 g","Fruttani",""],
-  ["Frutto della passione","B","2 frutti","—",""],
-  ["Rabarbaro","B","150 g","—",""],
-  ["Melagrana (chicchi)","M","45 g (¼ di frutto)","Fruttani, fruttosio",""],
-  ["Mango","A","≈ 40 g","Fruttosio",""],
-  ["Mela","A","—","Fruttosio, sorbitolo","Tutte le varietà."],
-  ["Pera","A","—","Fruttosio, sorbitolo",""],
-  ["Anguria","A","—","Fruttosio, fruttani, mannitolo",""],
-  ["Pesca gialla","M","30 g","Sorbitolo",""],
-  ["Nettarina, albicocca, prugna","A","—","Sorbitolo","Prugne secche: lassative ma ricche di sorbitolo, da testare solo in reintroduzione."],
-  ["Ciliegie","A","2 ciliegie","Fruttosio, sorbitolo",""],
-  ["Fichi freschi","A","—","Fruttosio, fruttani",""],
-  ["Frutta essiccata (datteri, fichi secchi)","A","—","Fruttani, fruttosio",""],
-  ["Uvetta","M","13 g (1 cucchiaio)","Fruttani, fruttosio",""],
-  ["Cocco essiccato","M","18 g","Sorbitolo",""],
- ],
- "Frutta secca e semi":[
-  ["Noci","B","30 g (≈ 10 gherigli)","—",""],
-  ["Noci pecan, macadamia","B","20–40 g","—",""],
-  ["Arachidi, burro di arachidi","B","32 g / 2 cucchiai","—",""],
-  ["Mandorle","M","12 g (≈ 10)","GOS","Bevanda di mandorla: bassa."],
-  ["Nocciole","M","15 g (≈ 10)","GOS, fruttani",""],
-  ["Anacardi","A","—","GOS, fruttani",""],
-  ["Pistacchi","A","—","GOS, fruttani",""],
-  ["Semi di zucca","B","2 cucchiai (≈ 23 g)","—",""],
-  ["Semi di girasole","M","2 cucchiaini (≈ 6 g)","Fruttani","Porzione molto più piccola dei semi di zucca."],
-  ["Semi di lino","B","1 cucchiaio (≈ 15 g)","—","Meglio macinati, con acqua.",true],
-  ["Semi di chia","B","2 cucchiai (≈ 24 g)","—","Formano un gel: bere abbastanza.",true],
-  ["Semi di sesamo","B","1 cucchiaio","—",""],
- ],
- "Integratori, dolcificanti e additivi":[
-  ["Psyllium (bucce o polvere pura)","B","1–2 cucchiaini (fino a ≈ 10 g/die)","—","Prima scelta per rettocele e alvo alterno. Aumentare gradualmente, lontano dai farmaci.",true],
-  ["Inulina, FOS, “fibra di cicoria”","A","—","Fruttani","Frequenti in integratori di fibra, yogurt e barrette."],
-  ["Sorbitolo, mannitolo, xilitolo, maltitolo, isomalto","A","—","Polioli","Sigle E420, E421, E967, E965, E953: gomme e caramelle “senza zucchero”."],
-  ["Zucchero bianco","B","Fino a 50 g","—",""],
-  ["Sciroppo d’acero puro","B","2 cucchiai","—",""],
-  ["Miele","M","1 cucchiaino (≈ 7 g)","Fruttosio",""],
-  ["Sciroppo d’agave","A","—","Fruttosio",""],
-  ["Stevia","B","Piccole quantità","—","Controllare che non sia miscelata con polioli."],
- ],
-};
-const LBL={B:"Basso",M:"Moderato",A:"Alto"};
-let lvl="";
-$("cat").innerHTML='<option value="">Tutte le categorie</option>'+Object.keys(D).map(c=>`<option>${c}</option>`).join("");
-const regPill='<span class="pill R">regolarità</span>';
-function renderTable(){
-  const t=$("q").value.trim().toLowerCase(),c=$("cat").value;let n=0,h="";
-  for(const [cat,rows] of Object.entries(D)){
-    if(c&&c!==cat)continue;
-    const f=rows.filter(r=>(!lvl||(lvl==="R"?r[5]:r[1]===lvl))&&(!t||r[0].toLowerCase().includes(t)));
-    if(!f.length)continue;
-    h+=`<tr class="cat-row"><td colspan="5">${cat}</td></tr>`;
-    for(const r of f){n++;
-      const p=`<span class="pill ${r[1]}">${LBL[r[1]]}</span>`;
-      h+=`<tr><td class="name"><span>${esc(r[0])}</span><span class="tags">${p}${r[5]?regPill:""}</span></td><td class="lvl">${p}</td><td class="por">${esc(r[2])}</td><td class="typ">${esc(r[3])}</td><td class="note">${r[5]?regPill:""}${esc(r[4])}</td></tr>`;}
-  }
-  $("tb").innerHTML=h||'<tr><td colspan="5" class="empty">Nessun alimento trovato. Prova un altro nome o togli i filtri.</td></tr>';
-  $("count").textContent=n+(n===1?" alimento":" alimenti");
-}
-document.querySelectorAll("#lvlChips button").forEach(b=>b.onclick=()=>{lvl=b.dataset.l;document.querySelectorAll("#lvlChips button").forEach(x=>x.setAttribute("aria-pressed",x===b));renderTable();});
-$("q").oninput=renderTable;$("cat").onchange=renderTable;
+  $("outBtn").onclick=()=>Auth.signOut();
+  $("pwBtn").onclick=()=>{$("fPw").hidden=!$("fPw").hidden;};
+  $("fPw").addEventListener("submit",async e=>{
+    e.preventDefault();const pw=$("nPw").value;
+    if(pw.length<8){$("pwMsg").textContent="Usa almeno 8 caratteri.";return;}
+    const {error}=await Auth.updatePassword(pw);
+    $("pwMsg").textContent=error?Auth.italianError(error):"Password aggiornata.";if(!error)$("nPw").value="";
+  });
 
-/* =========================================================
-   PASTI E PROFILO
-   ========================================================= */
-const EX={sex:"F",age:45,h:165,w:64,waist:80,hip:98,neck:33,act:"1.375",goal:"0"};
-let prof=store.get("profile",null),isExample=!prof;if(!prof)prof={...EX};
-const PF={pSex:"sex",pAge:"age",pH:"h",pW:"w",pWaist:"waist",pHip:"hip",pNeck:"neck",pAct:"act",pGoal:"goal"};
-for(const [id,k] of Object.entries(PF))$(id).value=prof[k]??"";
-$("pform").addEventListener("input",()=>{
-  for(const [id,k] of Object.entries(PF)){const v=$(id).value;prof[k]=(id==="pSex"||id==="pAct"||id==="pGoal")?v:(v===""?"":+v);}
-  isExample=false;store.set("profile",prof);flash($("profMsg"),"Profilo salvato");renderProfile();
-});
+  $("expBtn").onclick=async()=>{
+    $("expMsg").textContent="Preparo il file…";
+    const {data,error}=await sb.from("app_data").select("app,key,value,updated_at").order("app");
+    if(error){$("expMsg").textContent=Auth.italianError(error);return;}
+    const blob=new Blob([JSON.stringify({esportato:new Date().toISOString(),dati:data},null,2)],{type:"application/json"});
+    const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+    a.download="miei-dati-"+new Date().toISOString().slice(0,10)+".json";document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+    $("expMsg").textContent=`File scaricato (${data.length} voci).`;
+  };
 
-function calc(){
-  const {sex,age,h,w,waist,hip,neck}=prof,act=+prof.act,goal=+prof.goal,M=sex==="M"?1:0;
-  if(!(h>0&&w>0&&age>0))return null;
-  const hm=h/100,bmi=w/(hm*hm);
-  const bmr=10*w+6.25*h-5*age+(M?5:-161);
-  const tdee=bmr*act;
-  const floor=Math.max(bmr*1.05,M?1500:1200);
-  let target=tdee*(1+goal);if(goal<0)target=Math.max(target,floor);
-  target=Math.round(target/10)*10;
-  let bf=null,bfMethod="";
-  if(neck>0&&waist>0&&(M||hip>0)){
-    bf=M?495/(1.0324-0.19077*Math.log10(waist-neck)+0.15456*Math.log10(h))-450
-        :495/(1.29579-0.35004*Math.log10(waist+hip-neck)+0.221*Math.log10(h))-450;
-    bfMethod="US Navy";
-  }
-  if(!(bf>2&&bf<70)){bf=1.2*bmi+0.23*age-10.8*M-5.4;bfMethod="stima da IMC";}
-  const protPerKg=act>=1.725?1.4:act>=1.55?1.2:1.0;
-  const refW=bmi>30?24.9*hm*hm:w;
-  const prot=Math.round(protPerKg*refW);
-  const fat=Math.round(target*0.30/9);
-  const carb=Math.max(0,Math.round((target-prot*4-fat*9)/4));
-  const fibre=Math.min(35,Math.max(25,Math.round(target/1000*14)));
-  const water=Math.round(w*33/100)/10+0.3;
-  return {bmi,bmr,tdee,target,floor,bf,bfMethod,lean:w*(1-bf/100),whtr:waist>0?waist/h:null,whr:(waist>0&&hip>0)?waist/hip:null,
-    wMin:18.5*hm*hm,wMax:24.9*hm*hm,w22:22*hm*hm,prot,protPerKg,fat,carb,fibre,water,M};
-}
-function bmiCat(b){return b<18.5?["Sottopeso","R"]:b<25?["Normopeso","B"]:b<30?["Sovrappeso","M"]:["Obesità","A"];}
-let R=null;
-function renderProfile(){
-  $("exampleNote").hidden=!isExample;
-  R=calc();
-  if(!R){$("metrics").innerHTML='<div class="metric"><span class="s">Inserisci età, altezza e peso per vedere i calcoli.</span></div>';$("macroTarget").innerHTML="";renderMeals();return;}
-  const [cat,cls]=bmiCat(R.bmi),pos=Math.min(100,Math.max(0,(R.bmi-15)/(40-15)*100));
-  const whtrTxt=R.whtr==null?"Inserisci la vita":R.whtr<0.5?"Rischio basso (sotto 0,5)":R.whtr<0.6?"Rischio aumentato (0,5–0,6)":"Rischio alto (oltre 0,6)";
-  const whrLim=R.M?0.9:0.85;
-  const whrTxt=R.whr==null?"Inserisci vita e fianchi":R.whr<=whrLim?`Nella norma (≤ ${fmt(whrLim,2)})`:`Sopra la soglia OMS di ${fmt(whrLim,2)}`;
-  const goalTxt=+prof.goal<0?`Minimo consigliato: ${fmt(Math.round(R.floor/10)*10)} kcal`:+prof.goal>0?"Circa +10% sul fabbisogno":"Pari al fabbisogno stimato";
-  $("metrics").innerHTML=`
-   <div class="metric"><span class="k">Indice di massa corporea</span><span class="v">${fmt(R.bmi,1)} <small>kg/m²</small></span><span><span class="pill ${cls}">${cat}</span></span><div class="scale" aria-hidden="true"><i style="left:${pos}%"></i></div></div>
-   <div class="metric"><span class="k">Peso di riferimento</span><span class="v">${fmt(R.wMin,0)}–${fmt(R.wMax,0)} <small>kg</small></span><span class="s">Intervallo di IMC 18,5–24,9 · IMC 22 = ${fmt(R.w22,1)} kg</span></div>
-   <div class="metric"><span class="k">Metabolismo basale</span><span class="v">${fmt(R.bmr)} <small>kcal</small></span><span class="s">Mifflin‑St Jeor, a riposo</span></div>
-   <div class="metric"><span class="k">Fabbisogno totale</span><span class="v">${fmt(R.tdee)} <small>kcal</small></span><span class="s">Basale × attività (${fmt(+prof.act,3)})</span></div>
-   <div class="metric"><span class="k">Calorie obiettivo</span><span class="v">${fmt(R.target)} <small>kcal/die</small></span><span class="s">${goalTxt}</span></div>
-   <div class="metric"><span class="k">Vita / altezza</span><span class="v">${R.whtr==null?"–":fmt(R.whtr,2)}</span><span class="s">${whtrTxt}</span></div>
-   <div class="metric"><span class="k">Vita / fianchi</span><span class="v">${R.whr==null?"–":fmt(R.whr,2)}</span><span class="s">${whrTxt}</span></div>
-   <div class="metric"><span class="k">Massa grassa</span><span class="v">${fmt(R.bf,1)} <small>%</small></span><span class="s">${R.bfMethod} · massa magra ${fmt(R.lean,1)} kg</span></div>
-   <div class="metric"><span class="k">Acqua</span><span class="v">${fmt(R.water,1)} <small>litri/die</small></span><span class="s">≈ 33 ml/kg + 300 ml per lo psyllium</span></div>`;
-  $("macroTarget").innerHTML=[
-    ["Proteine",R.prot,"g",`${fmt(R.protPerKg,1)} g/kg`],
-    ["Carboidrati",R.carb,"g",`${Math.round(R.carb*4/R.target*100)}% kcal`],
-    ["Grassi",R.fat,"g","30% kcal"],
-    ["Fibre",R.fibre,"g","graduale"]
-  ].map(m=>`<div class="mbar"><span>${m[0]}</span><span class="small muted">${m[3]}</span><span><b style="color:var(--fg)">${m[1]} ${m[2]}</b></span></div>`).join("");
-  renderMeals();
-}
-
-/* Valori per 100 g: kcal, proteine, carboidrati, grassi, fibre */
-const F={
- avena:["Fiocchi d'avena",370,13,60,7,10], lattesl:["Latte senza lattosio p.s.",46,3.3,4.9,1.6,0],
- kiwi:["Kiwi",61,1.1,12,0.5,3], chia:["Semi di chia",486,17,8,31,34], psy:["Psyllium",200,2,4,0.5,80],
- yogsl:["Yogurt bianco senza lattosio",66,3.8,4.5,3.5,0], mirt:["Mirtilli",57,0.7,14,0.3,2.4],
- basm:["Riso basmati (crudo)",355,7.5,79,0.6,1.3], pollo:["Petto di pollo",110,23,0,1.5,0],
- zucch:["Zucchine",17,1.2,3,0.3,1], carota:["Carote",41,0.9,9.6,0.2,2.8], olio:["Olio extravergine",899,0,0,100,0],
- noci:["Noci",654,15,7,65,6.7], mand:["Mandarino",53,0.8,13,0.3,1.8], salm:["Salmone",208,20,0,13,0],
- patata:["Patate",77,2,17,0.1,2.2], fagio:["Fagiolini",31,1.8,7,0.2,2.7], panelm:["Pane a lievito madre",270,9,53,1.5,2.5],
- uova:["Uova",143,12.6,0.7,9.5,0], arancia:["Arancia",47,0.9,12,0.1,2.4], pastasg:["Pasta senza glutine (cruda)",355,6,78,1.5,2],
- pelati:["Pomodori pelati",22,1.1,4,0.2,1.2], parm:["Parmigiano",392,33,0,28,0], lattuga:["Lattuga",15,1.4,2.9,0.2,1.3],
- banana:["Banana soda",89,1.1,23,0.3,2.6], burroar:["Burro di arachidi",588,25,20,50,6], merl:["Merluzzo",82,18,0,0.7,0],
- quinoa:["Quinoa (cruda)",368,14,64,6,7], bieta:["Bietola",19,1.8,3.7,0.2,1.6], greco:["Yogurt greco senza lattosio 2%",73,10,4,2,0],
- fragole:["Fragole",32,0.7,7.7,0.3,2], lino:["Semi di lino macinati",534,18,1.6,42,27], tofu:["Tofu compatto",144,15,3,9,1],
- rintegr:["Riso integrale (crudo)",360,7.5,76,2.7,3.5], pakchoi:["Pak choi",13,1.5,2.2,0.2,1], soia:["Salsa di soia",53,8,5,0,0],
- gallette:["Gallette di riso",387,8,82,3,4], tacch:["Petto di tacchino",107,24,0,1,0], polenta:["Farina di mais (polenta)",362,8.7,77,2.7,7],
- cnero:["Cavolo nero",49,4.3,5,0.9,3.6], papaya:["Papaya",43,0.5,11,0.3,1.7], spinaci:["Spinaci",23,2.9,3.6,0.4,2.2],
- orata:["Orata",121,20,0,4,0], zucca:["Zucca delica",26,1,6.5,0.1,0.5], rucola:["Rucola",25,2.6,3.7,0.7,1.6],
- lentsc:["Lenticchie in scatola sciacquate",116,9,20,0.4,7.9], lamponi:["Lamponi",52,1.2,12,0.7,6.5],
- manzo:["Macinato di manzo magro",170,20,0,10,0], pepv:["Peperone verde",20,0.9,4.6,0.2,1.7], pecan:["Noci pecan",691,9,14,72,9.6],
- olioaglio:["Olio aromatizzato all'aglio",899,0,0,100,0]
-};
-/* [id, grammi, scalabile, testo quantità facoltativo] */
-const DAYS=[
- {n:"Giorno 1",m:[
-  ["Colazione",[["avena",40,1],["lattesl",200,1],["kiwi",150,0,"2 piccoli"],["chia",12,0,"1 cucchiaio"],["psy",5,0,"1 cucchiaino"]],"Psyllium in un bicchiere d'acqua a parte, da bere subito."],
-  ["Spuntino",[["yogsl",125,1],["mirt",80,0]]],
-  ["Pranzo",[["basm",80,1],["pollo",120,1],["zucch",65,0],["carota",80,0],["olio",10,1,"2 cucchiaini"]],"Zucchina: unico alimento moderato del pasto."],
-  ["Merenda",[["noci",20,0,"≈ 6 gherigli"],["mand",80,0,"1 frutto"]]],
-  ["Cena",[["salm",130,1],["patata",200,1],["fagio",75,0],["panelm",40,1],["olio",10,1,"2 cucchiaini"]]]
- ]},
- {n:"Giorno 2",m:[
-  ["Colazione",[["panelm",60,1,null],["uova",110,0,"2 uova"],["arancia",130,0,"1 media"],["psy",5,0,"1 cucchiaino"]],"Uova strapazzate con erba cipollina."],
-  ["Spuntino",[["banana",110,0,"1 soda"],["burroar",15,0,"1 cucchiaio"]]],
-  ["Pranzo",[["pastasg",80,1],["pelati",90,0],["parm",15,1],["lattuga",60,0],["carota",60,0],["olioaglio",10,1,"2 cucchiaini"]],"Sugo con olio all'aglio e basilico, senza aglio intero."],
-  ["Merenda",[["greco",125,1],["fragole",65,0,"≈ 5"]]],
-  ["Cena",[["merl",160,1],["quinoa",70,1],["bieta",75,0],["olio",10,1,"2 cucchiaini"]]]
- ]},
- {n:"Giorno 3",m:[
-  ["Colazione",[["greco",150,1],["avena",30,1],["fragole",65,0,"≈ 5"],["lino",10,0,"1 cucchiaio raso"],["psy",5,0,"1 cucchiaino"]]],
-  ["Spuntino",[["kiwi",150,0,"2 piccoli"]]],
-  ["Pranzo",[["tofu",150,1],["rintegr",80,1],["pakchoi",75,0],["carota",60,0],["soia",10,0,"2 cucchiaini"],["olioaglio",10,1,"2 cucchiaini"]],"Saltato in padella con zenzero fresco."],
-  ["Merenda",[["parm",20,0],["gallette",18,1,"2 gallette"]]],
-  ["Cena",[["tacch",130,1],["polenta",70,1],["cnero",75,0],["olio",10,1,"2 cucchiaini"]],"Cavolo nero ben cotto: più tollerato."]
- ]},
- {n:"Giorno 4",m:[
-  ["Colazione",[["avena",40,1],["lattesl",200,1],["papaya",140,0],["chia",12,0,"1 cucchiaio"],["psy",5,0,"1 cucchiaino"]],"Porridge cotto 3 minuti nel latte."],
-  ["Spuntino",[["yogsl",125,1],["lamponi",60,0]]],
-  ["Pranzo",[["uova",110,0,"2 uova"],["spinaci",75,0],["patata",200,1],["panelm",40,1],["olio",10,1,"2 cucchiaini"]],"Frittata con spinaci e parte verde del porro."],
-  ["Merenda",[["kiwi",75,0,"1 kiwi"],["pecan",20,0,"≈ 10"]]],
-  ["Cena",[["orata",180,1],["basm",70,1],["zucca",75,0],["rucola",30,0],["olio",10,1,"2 cucchiaini"]]]
- ]},
- {n:"Giorno 5",m:[
-  ["Colazione",[["panelm",60,1],["burroar",20,0,"1 cucchiaio abbondante"],["banana",110,0,"1 soda"],["psy",5,0,"1 cucchiaino"]]],
-  ["Spuntino",[["yogsl",125,1],["mirt",80,0]]],
-  ["Pranzo",[["lentsc",46,0,"¼ di tazza"],["rintegr",75,1],["carota",80,0],["parm",15,1],["olio",10,1,"2 cucchiaini"]],"Lenticchie: unico moderato del giorno, ben sciacquate."],
-  ["Merenda",[["noci",20,0,"≈ 6 gherigli"],["mand",80,0,"1 frutto"]]],
-  ["Cena",[["manzo",150,1],["patata",200,1],["pepv",75,0],["olio",10,1,"2 cucchiaini"]],"Patate al forno con rosmarino."]
- ]}
-];
-let day=store.get("day",0);if(!(day>=0&&day<DAYS.length))day=0;
-$("dayChips").innerHTML=DAYS.map((d,i)=>`<button type="button" data-d="${i}" aria-pressed="${i===day}">${i+1}</button>`).join("");
-$("dayChips").addEventListener("click",e=>{const b=e.target.closest("[data-d]");if(!b)return;day=+b.dataset.d;store.set("day",day);
-  document.querySelectorAll("#dayChips button").forEach(x=>x.setAttribute("aria-pressed",x===b));renderMeals();});
-const nut=(id,g)=>F[id].slice(1).map(v=>v*g/100);
-function renderMeals(){
-  const D0=DAYS[day];let fixK=0,scK=0;
-  D0.m.forEach(([,it])=>it.forEach(([id,g,s])=>{const k=F[id][1]*g/100;if(s)scK+=k;else fixK+=k;}));
-  const target=R?R.target:2000;
-  let f=(target-fixK)/scK;f=Math.min(1.8,Math.max(0.55,f));
-  const tot=[0,0,0,0,0];
-  const round5=g=>Math.max(5,Math.round(g/5)*5);
-  $("meals").innerHTML=D0.m.map(([name,it,tip])=>{
-    let mk=0;
-    const rows=it.map(([id,g,s,txt])=>{
-      const gg=s?(g>=30?round5(g*f):Math.round(g*f)):g;
-      const n=nut(id,gg);n.forEach((v,i)=>tot[i]+=v);mk+=n[0];
-      const q=s?`${gg} g`:(txt?`${txt}`:`${gg} g`);
-      const sub=s?(txt?`<span class="lock" style="color:var(--muted)">${esc(txt)} alla dose base</span>`:""):`<span class="lock">porzione FODMAP fissa${txt?` · ${gg} g`:""}</span>`;
-      return `<div class="it"><span>${esc(F[id][0])}${sub?"<br>"+sub:""}</span><span class="q">${esc(q)}</span></div>`;
-    }).join("");
-    return `<div class="meal"><h3>${name}<small>${fmt(mk)} kcal</small></h3>${rows}${tip?`<div class="tip">${esc(tip)}</div>`:""}</div>`;
-  }).join("");
-  const capped=Math.abs(f-(target-fixK)/scK)>0.01;
-  $("scaleNote").innerHTML=`${R?"":"Profilo incompleto: grammature calcolate su 2000 kcal. "}Porzioni di cereali, proteine, latticini e olio adattate a <b>${fmt(target)} kcal</b> (fattore ${fmt(f,2)}).${capped?" Il fattore è al limite: per arrivare all'obiettivo aggiungi o togli uno spuntino.":""}`;
-  const tg=R?[R.target,R.prot,R.carb,R.fat,R.fibre]:[2000,null,null,null,30];
-  const names=["Energia","Proteine","Carboidrati","Grassi","Fibre"],units=["kcal","g","g","g","g"];
-  $("dayTotals").innerHTML=`<div class="eyebrow">Totale ${D0.n.toLowerCase()} rispetto all'obiettivo</div>`+names.map((nm,i)=>{
-    const v=tot[i],t=tg[i],pct=t?Math.min(100,v/t*100):0,over=t&&v>t*1.1;
-    return `<div class="mbar"><span>${nm}</span><span class="t"><i class="${over?"over":""}" style="width:${t?pct:0}%"></i></span><span>${fmt(v)}${t?` / ${fmt(t)}`:""} ${units[i]}</span></div>`;}).join("");
-}
-
-/* Copia riepilogo */
-$("copyAll").addEventListener("click",()=>{
-  const L=[];const r=R;
-  L.push("RIEPILOGO PERCORSO LOW-FODMAP");
-  if($("startDate").value)L.push(`Inizio eliminazione: ${$("startDate").value} (settimana ${currentWeek()})`);
-  if(r)L.push(`Profilo: ${prof.sex==="M"?"uomo":"donna"}, ${prof.age} anni, ${prof.h} cm, ${prof.w} kg · IMC ${fmt(r.bmi,1)} · obiettivo ${fmt(r.target)} kcal`);
-  L.push("","NOTE PER FASE");
-  PHASES.forEach(p=>{const done=p.items.filter((_,i)=>checks[p.id+":"+i]).length;L.push(`- ${p.name} (${done}/${p.items.length} passi): ${(notes[p.id]||"nessuna nota").trim()}`);});
-  L.push("","REINTRODUZIONE");
-  RI.forEach(x=>{const v=reintro[x.id]||{};L.push(`- ${x.g}: ${(RES.find(o=>o[0]===(v.res||""))||RES[0])[1]}${v.note?" · "+v.note:""}`);});
-  L.push("","DIARIO (ultime 14 voci)");
-  diary.slice(0,14).forEach(x=>L.push(`- ${x.d}: Bristol ${BR[x.b]}, gonfiore ${x.g}/10, dolore ${x.p}/10, svuotamento ${x.c?"completo":"incompleto"}, psyllium ${x.ps} g${x.n?" · "+x.n:""}`));
-  if(!diary.length)L.push("- nessuna voce");
-  const txt=L.join("\n"),box=$("copyBox");
-  const fallback=()=>{box.hidden=false;box.value=txt;box.focus();box.select();flash($("copyMsg"),"Testo selezionato: copialo a mano");};
-  try{navigator.clipboard.writeText(txt).then(()=>{box.hidden=true;flash($("copyMsg"),"Riepilogo copiato");},fallback);}catch(e){fallback();}
-});
-
-/* Avvio */
-renderTimeline();renderReintro();renderDiary();renderTable();renderProfile();
-show(location.hash.slice(1)||store.get("tab","percorso"));navH();
-
-/* Modifiche arrivate da un altro dispositivo dello stesso utente */
-AppStore.onChange(k=>{
-  const a=document.activeElement;
-  if(k==="checks"||k==="notes"){
-    checks=store.get("checks",{});notes=store.get("notes",{});
-    if(!$("timeline").contains(a)){const y=window.scrollY;renderTimeline();window.scrollTo(0,y);}
-  }else if(k==="start"){$("startDate").value=store.get("start","");renderTimeline();}
-  else if(k==="reintro"){reintro=store.get("reintro",{});if(!$("reintro").contains(a))renderReintro();}
-  else if(k==="diary"){diary=store.get("diary",[]);renderDiary();}
-  else if(k==="profile"){
-    prof=store.get("profile",prof);isExample=false;
-    if(!$("pform").contains(a))for(const [id,kk] of Object.entries(PF))$(id).value=prof[kk]??"";
-    renderProfile();
-  }
-});
+  sb.auth.onAuthStateChange((ev)=>{
+    if(ev==="PASSWORD_RECOVERY"){recovering=true;show("vRecover");}
+  });
+  setMode("in");
+  enter();
 })();
 </script>
 </body>
