@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>I miei siti</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<link rel="stylesheet" href="shared/base.css">
+<style>
+/* Layout: colonna centrale; accesso a sinistra e presentazione a destra su desktop, impilati su telefono */
+main{padding-block:calc(40px + env(safe-area-inset-top,0px)) calc(56px + env(safe-area-inset-bottom,0px))}
+.auth{display:grid;gap:28px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));align-items:start}
+.intro{display:grid;gap:12px;align-content:start;padding-top:8px}
+.intro p{margin:0;max-width:52ch}
+.tabs{display:flex;gap:4px;background:var(--sunk);padding:4px;border-radius:12px}
+.tabs button{flex:1;border:0;background:transparent;border-radius:9px;padding:8px;font-weight:700;color:var(--muted);cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--surface);color:var(--fg);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+form{display:grid;gap:12px}
+.top{display:flex;flex-wrap:wrap;gap:10px 20px;align-items:end;justify-content:space-between}
+.sites{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+.site{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:grid;gap:8px;text-decoration:none;color:var(--fg);align-content:start;transition:border-color .15s,transform .15s}
+.site:hover{border-color:var(--accent);transform:translateY(-1px)}
+.site h2{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.site .tag{font-family:var(--f-body);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);font-weight:700}
+.site p{margin:0;color:var(--muted);font-size:.93rem}
+.site .go{font-weight:700;color:var(--accent);font-size:.92rem}
+.site.add{border-style:dashed;background:transparent}
+@media (prefers-reduced-motion:reduce){.site{transition:none}.site:hover{transform:none}}
+.acct{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.dash{display:grid;gap:26px}
+code{background:var(--sunk);padding:1px 6px;border-radius:6px;font-size:.88em}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="shared/config.js"></script>
+<script src="shared/sites.js"></script>
+<script src="shared/auth.js"></script>
+</head>
+<body>
+<main class="gut">
+<div class="inner">
+
+  <!-- Configurazione mancante -->
+  <section id="vSetup" class="card" hidden>
+    <div class="eyebrow">Configurazione</div>
+    <h1>Manca il collegamento al database</h1>
+    <p class="muted" style="margin:0">Apri <code>shared/config.js</code> e inserisci l'URL del progetto Supabase e la chiave <b>anon</b>. Le istruzioni passo passo sono nel file <code>README.md</code> del repository.</p>
+  </section>
+
+  <!-- Accesso -->
+  <section id="vAuth" class="auth" hidden>
+    <div class="intro">
+      <div class="eyebrow" id="brandEyebrow"></div>
+      <h1>Strumenti personali, dati al sicuro</h1>
+      <p class="muted">Accedi una volta e ritrovi note, diari e profili su ogni dispositivo. Ogni persona vede soltanto i propri dati.</p>
+    </div>
+    <div class="card">
+      <div class="tabs" role="tablist">
+        <button type="button" role="tab" id="tIn" aria-selected="true" data-m="in">Accedi</button>
+        <button type="button" role="tab" id="tUp" aria-selected="false" data-m="up">Registrati</button>
+      </div>
+      <form id="fAuth" novalidate>
+        <label class="f">Email<input type="email" id="aEmail" autocomplete="email" required></label>
+        <label class="f" id="pwWrap">Password<input type="password" id="aPw" autocomplete="current-password" minlength="8" required></label>
+        <button class="btn" type="submit" id="aBtn">Accedi</button>
+        <div id="aMsg" class="msg" hidden></div>
+        <div class="row" style="justify-content:space-between">
+          <button type="button" class="linkbtn" id="aForgot">Password dimenticata?</button>
+          <button type="button" class="linkbtn" id="aBack" hidden>Torna all'accesso</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- Nuova password dopo il link via email -->
+  <section id="vRecover" class="card" hidden style="max-width:460px;margin:0 auto">
+    <h2>Scegli una nuova password</h2>
+    <form id="fRecover">
+      <label class="f">Nuova password (almeno 8 caratteri)<input type="password" id="rPw" autocomplete="new-password" minlength="8" required></label>
+      <button class="btn" type="submit">Salva la password</button>
+      <div id="rMsg" class="msg" hidden></div>
+    </form>
+  </section>
+
+  <!-- Elenco dei siti -->
+  <section id="vDash" class="dash" hidden>
+    <div class="top">
+      <div>
+        <div class="eyebrow" id="hello"></div>
+        <h1 id="brand"></h1>
+      </div>
+      <button type="button" class="btn ghost sm" id="outBtn">Esci</button>
+    </div>
+    <div class="sites" id="sites"></div>
+    <div class="acct">
+      <div class="card">
+        <h2>Copia di sicurezza</h2>
+        <p class="muted small" style="margin:0">Il piano gratuito di Supabase non fa backup automatici. Scarica ogni tanto un file con tutti i tuoi dati, di tutti i siti.</p>
+        <div class="row"><button type="button" class="btn" id="expBtn">Scarica i miei dati</button><span id="expMsg" class="small muted" aria-live="polite"></span></div>
+      </div>
+      <div class="card">
+        <h2>Account</h2>
+        <p class="muted small" style="margin:0" id="acctInfo"></p>
+        <div class="row"><button type="button" class="btn ghost sm" id="pwBtn">Cambia password</button></div>
+        <form id="fPw" hidden>
+          <label class="f">Nuova password<input type="password" id="nPw" autocomplete="new-password" minlength="8" required></label>
+          <div class="row"><button class="btn sm" type="submit">Salva</button><span id="pwMsg" class="small" aria-live="polite"></span></div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+</div>
+</main>
+
+<script>
+(function(){
+  const C=window.SITE_CONFIG,$=id=>document.getElementById(id);
+  const views=["vSetup","vAuth","vRecover","vDash"];
+  const show=v=>views.forEach(x=>$(x).hidden=x!==v);
+  document.getElementById("brandEyebrow").textContent=C.siteName;
+  if(!C.configured){show("vSetup");return;}
+
+  const params=new URLSearchParams(location.search);
+  const next=Auth.safeNext(params.get("next"));
+  let mode="in",recovering=/type=recovery/.test(location.hash);
+
+  function msg(el,text,kind){el.hidden=!text;el.textContent=text||"";el.className="msg "+(kind||"");}
+  function setMode(m){
+    mode=m;
+    $("tIn").setAttribute("aria-selected",m==="in");$("tUp").setAttribute("aria-selected",m==="up");
+    document.querySelector(".tabs").hidden=m==="reset";
+    $("pwWrap").hidden=m==="reset";$("aPw").required=m!=="reset";
+    $("aPw").autocomplete=m==="up"?"new-password":"current-password";
+    $("aBtn").textContent=m==="in"?"Accedi":m==="up"?"Crea account":"Invia link per reimpostarla";
+    $("aForgot").hidden=m!=="in";$("aBack").hidden=m!=="reset";
+    msg($("aMsg"),"");
+  }
+  document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>setMode(b.dataset.m));
+  $("aForgot").onclick=()=>setMode("reset");
+  $("aBack").onclick=()=>setMode("in");
+
+  $("fAuth").addEventListener("submit",async e=>{
+    e.preventDefault();
+    const email=$("aEmail").value.trim(),pw=$("aPw").value;
+    if(!/^\S+@\S+\.\S+$/.test(email))return msg($("aMsg"),"Inserisci un indirizzo email valido.","err");
+    if(mode!=="reset"&&pw.length<8)return msg($("aMsg"),"La password deve avere almeno 8 caratteri.","err");
+    $("aBtn").disabled=true;
+    try{
+      if(mode==="in"){
+        const {error}=await Auth.signIn(email,pw);if(error)throw error;
+        if(next){location.href=next;return;}
+        await enter();
+      }else if(mode==="up"){
+        const {data,error}=await Auth.signUp(email,pw);if(error)throw error;
+        if(data.session){await enter();}
+        else msg($("aMsg"),"Account creato. Ti abbiamo mandato un'email: apri il link per confermare l'indirizzo, poi accedi.","ok");
+      }else{
+        const {error}=await Auth.resetPassword(email);if(error)throw error;
+        msg($("aMsg"),"Se l'indirizzo è registrato, riceverai un'email con il link per scegliere una nuova password.","ok");
+      }
+    }catch(err){msg($("aMsg"),Auth.italianError(err),"err");}
+    finally{$("aBtn").disabled=false;}
+  });
+
+  $("fRecover").addEventListener("submit",async e=>{
+    e.preventDefault();
+    const pw=$("rPw").value;if(pw.length<8)return msg($("rMsg"),"Usa almeno 8 caratteri.","err");
+    const {error}=await Auth.updatePassword(pw);
+    if(error)return msg($("rMsg"),Auth.italianError(error),"err");
+    recovering=false;history.replaceState(null,"",location.pathname);await enter();
+  });
+
+  async function enter(){
+    const u=await Auth.currentUser();
+    if(!u){show("vAuth");return;}
+    if(recovering){show("vRecover");return;}
+    if(next){location.href=next;return;}
+    $("brand").textContent=C.siteName;
+    $("hello").textContent="Ciao, "+u.email;
+    $("acctInfo").textContent="Accesso con "+u.email+". I tuoi dati sono visibili solo a te.";
+    $("sites").innerHTML=window.SITES.map(s=>`<a class="site" href="${C.root+s.path}">
+        <h2>${s.title}<span class="tag">${s.tag||""}</span></h2><p>${s.desc}</p><span class="go">Apri →</span></a>`).join("")+
+      `<div class="site add"><h2>Prossimo sito</h2><p>Copia la cartella <code>siti/modello</code> e aggiungila in <code>shared/sites.js</code>: comparirà qui con login e salvataggio già pronti.</p></div>`;
+    show("vDash");
+  }
+
+  $("outBtn").onclick=()=>Auth.signOut();
+  $("pwBtn").onclick=()=>{$("fPw").hidden=!$("fPw").hidden;};
+  $("fPw").addEventListener("submit",async e=>{
+    e.preventDefault();const pw=$("nPw").value;
+    if(pw.length<8){$("pwMsg").textContent="Usa almeno 8 caratteri.";return;}
+    const {error}=await Auth.updatePassword(pw);
+    $("pwMsg").textContent=error?Auth.italianError(error):"Password aggiornata.";if(!error)$("nPw").value="";
+  });
+
+  $("expBtn").onclick=async()=>{
+    $("expMsg").textContent="Preparo il file…";
+    const {data,error}=await sb.from("app_data").select("app,key,value,updated_at").order("app");
+    if(error){$("expMsg").textContent=Auth.italianError(error);return;}
+    const blob=new Blob([JSON.stringify({esportato:new Date().toISOString(),dati:data},null,2)],{type:"application/json"});
+    const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+    a.download="miei-dati-"+new Date().toISOString().slice(0,10)+".json";document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+    $("expMsg").textContent=`File scaricato (${data.length} voci).`;
+  };
+
+  sb.auth.onAuthStateChange((ev)=>{
+    if(ev==="PASSWORD_RECOVERY"){recovering=true;show("vRecover");}
+  });
+  setMode("in");
+  enter();
+})();
+</script>
+</body>
+</html>

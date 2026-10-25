@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Nuovo sito</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<link rel="stylesheet" href="../../shared/base.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="../../shared/config.js"></script>
+<script src="../../shared/auth.js"></script>
+<script src="../../shared/store.js"></script>
+<script src="../../shared/userbar.js"></script>
+<style>
+main{padding-block:24px 56px}
+.wrap{display:grid;gap:20px}
+</style>
+</head>
+<body>
+<!--
+  MODELLO PER UN NUOVO SITO
+  1. Copia questa cartella, es. siti/spese-casa/
+  2. Cambia APP_ID qui sotto con un nome unico (solo lettere, numeri e trattini)
+  3. Aggiungi il sito in shared/sites.js
+  Login, salvataggio nel database e sincronizzazione tra dispositivi sono già attivi:
+    AppStore.get("chiave", valorePredefinito)  → legge
+    AppStore.set("chiave", valore)              → salva (qualsiasi dato JSON)
+    AppStore.onChange((chiave, valore) => …)    → modifiche arrivate da un altro dispositivo
+-->
+<main class="gut">
+  <div class="inner wrap">
+    <div id="userbar"></div>
+    <h1>Nuovo sito</h1>
+    <div class="card">
+      <label class="f">Una nota di prova, salvata nel tuo account
+        <textarea id="nota" rows="5" placeholder="Scrivi qualcosa e aprila da un altro dispositivo…"></textarea>
+      </label>
+    </div>
+  </div>
+</main>
+<script>
+const APP_ID = "modello";
+
+(async () => {
+  const user = await AppStore.init(APP_ID);
+  UserBar.mount(document.getElementById("userbar"), user);
+
+  const nota = document.getElementById("nota");
+  nota.value = AppStore.get("nota", "");
+  nota.addEventListener("input", () => AppStore.set("nota", nota.value));
+  AppStore.onChange((k, v) => { if (k === "nota" && document.activeElement !== nota) nota.value = v; });
+})();
+</script>
+</body>
+</html>
